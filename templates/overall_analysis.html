@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overall Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Overall Analysis</h1>
+
+        <!-- Chart for Stock Distribution -->
+        <div class="chart-container">
+            <h4>Stock Distribution Across Product Categories</h4>
+            <canvas id="stockChart"></canvas>
+        </div>
+
+        <!-- Chart for Sales Trends -->
+        <div class="chart-container">
+            <h4>Sales Trends Over Time</h4>
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+
+        <!-- Chart for Payment Method Distribution -->
+        <div class="chart-container">
+            <h4>Sales Distribution by Payment Methods</h4>
+            <canvas id="paymentChart"></canvas>
+        </div>
+
+        <!-- Chart for Regional Sales -->
+        <div class="chart-container">
+            <h4>Sales by Geographical Regions</h4>
+            <canvas id="regionChart"></canvas>
+        </div>
+
+        <!-- Chart for Customer Demographics -->
+        <div class="chart-container">
+            <h4>Customer Demographics (Gender)</h4>
+            <canvas id="genderChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and Render Stock Distribution
+        fetch('/get-stock-distribution')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.categories,
+                        datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    }]
+                }
+            });
+        });
+
+
+        // Fetch and Render Sales Trends
+        fetch('/get-sales-trends')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('salesTrendChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Sales Over Time',
+                            data: data.sales,
+                            borderColor: '#36A2EB',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    }
+                });
+            });
+
+        // Fetch and Render Payment Method Distribution
+        fetch('/get-payment-methods')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('paymentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.methods,
+                        datasets: [{
+                            label: 'Payment Methods',
+                            data: data.values,
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                        }]
+                    }
+                });
+            });
+
+        // Fetch and Render Regional Sales
+        fetch('/get-regional-sales')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('regionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.regions,
+                        datasets: [{
+                            label: 'Sales by Region',
+                            data: data.sales,
+                            backgroundColor: '#36A2EB'
+                        }]
+                    }
+                });
+            });
+
+        // Fetch and Render Customer Demographics (Gender)
+        fetch('/get-customer-gender')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('genderChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Male', 'Female', 'Other'],
+                        datasets: [{
+                            label: 'Customer Demographics',
+                            data: [data.male, data.female, data.other],
+                            backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56']
+                        }]
+                    }
+                });
+            });
+    </script>
+</body>
+</html>

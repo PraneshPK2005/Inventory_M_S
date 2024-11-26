@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #A1D6E2, #F1F1F2);
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 2.8rem;
+    color: #1995AD;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #1995AD, #67C8DA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Tiles Section */
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.tile {
+    background: linear-gradient(135deg, #1995AD, #A1D6E2);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    color: #fff;
+    position: relative;
+}
+
+.tile:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(135deg, #1995AD, #67C8DA);
+}
+
+.tile img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    filter: brightness(0.8);
+    border-bottom: 3px solid #fff;
+}
+
+.tile-content {
+    padding: 20px;
+    text-align: center;
+}
+
+.tile-content h3 {
+    margin: 0 0 10px;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tile-content p {
+    margin: 0;
+    font-size: 1rem;
+    color: #F1F1F2;
+}
+
+/* Glass Morphism Section */
+.glass-box-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    gap: 20px;
+}
+
+.glass-box {
+    flex: 1;
+    padding: 20px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.glass-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+}
+
+.glass-box h3 {
+    margin-bottom: 10px;
+    font-size: 1.6rem;
+    color: #1995AD;
+    text-transform: uppercase;
+}
+
+.glass-box p {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* Button-Like Hover Effect for Links */
+.tile:hover .tile-content h3 {
+    color: #F1F1F2;
+}
+
+.tile:hover .tile-content p {
+    color: #FFFAE5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .glass-box-container {
+        flex-direction: column;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Dashboard</h1>
+
+        <!-- Tiles Section -->
+        <div class="tiles">
+            <!-- Tile 1: REPORT -->
+            <a href="/report" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Report">
+                <div class="tile-content">
+                    <h3>REPORT</h3>
+                    <p>View detailed reports about your sales and inventory.</p>
+                </div>
+            </a>
+            
+            <!-- Tile 2: ADD PRODUCT -->
+            <a href="/add_product" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Add Product">
+                <div class="tile-content">
+                    <h3>ADD PRODUCT</h3>
+                    <p>Easily add new products to your inventory.</p>
+                </div>
+            </a>
+
+            <!-- Tile 3: INVENTORY -->
+            <a href="/inventory" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Inventory">
+                <div class="tile-content">
+                    <h3>INVENTORY</h3>
+                    <p>Manage and track your inventory details efficiently.</p>
+                </div>
+            </a>
+
+            <!-- Tile 4: ANALYSIS -->
+            <a href="/analysis" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Analysis">
+                <div class="tile-content">
+                    <h3>ANALYSIS</h3>
+                    <p>Analyze trends and insights to grow your business.</p>
+                </div>
+            </a>
+
+            <!-- Tile 5: GRIEVANCES -->
+            <a href="/grievance" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Grievances">
+                <div class="tile-content">
+                    <h3>GRIEVANCES</h3>
+                    <p>Submit and manage customer grievances effectively.</p>
+                </div>
+            </a>
+
+            <!-- Tile 6: ORDER MANAGEMENT -->
+            <a href="/ordering" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Order Management">
+                <div class="tile-content">
+                    <h3>ORDERING</h3>
+                    <p>Track and manage orders seamlessly.</p>
+                </div>
+            </a>
+
+            <a href="/order_management" class="tile">
+                <img src="https://via.placeholder.com/300x150" alt="Analysis">
+                <div class="tile-content">
+                    <h3>order management</h3>
+                    <p>Analyze trends and insights to grow your business.</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Glass Morphism Boxes -->
+        <div class="glass-box-container">
+            <!-- High Sales Box -->
+            <div class="glass-box">
+                <h3>High Sales Products</h3>
+                <p>Top-selling products will be displayed here.</p>
+            </div>
+
+            <!-- Low Price Box -->
+            <div class="glass-box">
+                <h3>Low Price Products</h3>
+                <p>Top 5 low-priced products will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordering Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-align: center;
+        }
+
+        .form-control {
+            border-radius: 30px;
+            border: 1px solid #ced4da;
+            padding: 10px 20px;
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-body {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input[type="number"] {
+            width: 80%;
+            margin: 0 auto;
+            display: block;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        button[type="submit"] {
+            display: block;
+            align-items: center;
+            width: 300px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 0 auto;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #search {
+            max-width: 500px;
+            margin: 0 auto 20px;
+            display: block;
+        }
+
+        #product_list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .product-tile {
+            display: flex;
+            flex: 1 1 calc(30% - 20px);
+            margin: 10px;
+            max-width: 300px;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Page Title -->
+        <h2>Order Products</h2>
+        
+        <!-- Search Bar -->
+        <input type="text" id="search" class="form-control mb-4" placeholder="Search by name or code">
+        
+        <!-- Products Listing -->
+        <form action="/place_order" method="POST">
+            <div class="row" id="product_list">
+                {% for product in products %}
+                <div class="col-md-4 mb-4 product-tile">
+                    <div class="card">
+                        <!-- Product Image -->
+                        <img 
+                            src="{{ product[5] }}" 
+                            alt="{{ product[1] }}" 
+                            class="card-img-top" 
+                            onerror="this.src='https://via.placeholder.com/300x200?text=No+Image+Available';"
+                        />
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product[1] }}</h5>
+                            <p><strong>Code:</strong> {{ product[2] }}</p>
+                            <p><strong>Price:</strong> ${{ product[3] }}</p>
+                            <p><strong>Description:</strong> {{ product[4] }}</p>
+                            <input type="hidden" name="product_id" value="{{ product[0] }}">
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" name="quantity_{{ product[0] }}" min="0" class="form-control" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Place Order Button -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Place Order</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Functionality -->
+    <script>
+        document.getElementById('search').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.product-tile').forEach(tile => {
+                const name = tile.querySelector('.card-title').textContent.toLowerCase();
+                const code = tile.querySelector('p').textContent.toLowerCase();
+                tile.style.display = name.includes(query) || code.includes(query) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

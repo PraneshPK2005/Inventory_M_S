@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Specific Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            margin-top: 30px;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Specific Analysis</h1>
+        <div class="form-section">
+            <label for="productSelect">Select Product:</label>
+            <select id="productSelect" class="form-control">
+                <option value="">Select a Product</option>
+                {% for product in products %}
+                    <option value="{{ product['code'] }}">{{ product['name'] }} (Code: {{ product['code'] }})</option>
+                {% endfor %}
+            </select>
+            <button id="analyzeButton" class="btn btn-primary mt-3" onclick="analyzeProduct()">Analyze</button>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-container">
+            <h4>Price Over Time</h4>
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Units Sold Over Time</h4>
+            <canvas id="unitsSoldChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Revenue Generated</h4>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Sales by Country</h4>
+            <canvas id="countryChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Time of Purchase</h4>
+            <canvas id="timeChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Mode of Payment</h4>
+            <canvas id="paymentChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Customer Age Groups</h4>
+            <canvas id="ageGroupChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4>Customer Gender Distribution</h4>
+            <canvas id="genderChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function analyzeProduct() {
+            const productCode = document.getElementById("productSelect").value;
+
+            if (!productCode) {
+                alert("Please select a product!");
+                return;
+            }
+
+            // Fetch data for each graph
+            fetch(`/get-product-price-time/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderPriceChart(data))
+                .catch(error => console.error("Error fetching price data:", error));
+
+            fetch(`/get-product-units-sold/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderUnitsSoldChart(data))
+                .catch(error => console.error("Error fetching units sold data:", error));
+
+            fetch(`/get-product-revenue/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderRevenueChart(data))
+                .catch(error => console.error("Error fetching revenue data:", error));
+
+            fetch(`/get-product-country-distribution/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderCountryChart(data))
+                .catch(error => console.error("Error fetching country distribution:", error));
+
+            fetch(`/get-product-time-of-purchase/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderTimeChart(data))
+                .catch(error => console.error("Error fetching time of purchase data:", error));
+
+            fetch(`/get-product-payment-modes/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderPaymentChart(data))
+                .catch(error => console.error("Error fetching payment modes data:", error));
+
+            fetch(`/get-product-age-distribution/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderAgeGroupChart(data))
+                .catch(error => console.error("Error fetching age group distribution:", error));
+
+            fetch(`/get-product-gender-distribution/${productCode}`)
+                .then(response => response.json())
+                .then(data => renderGenderChart(data))
+                .catch(error => console.error("Error fetching gender distribution:", error));
+        }
+
+        // Chart rendering functions
+        function renderPriceChart(data) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Average Price Over Time',
+                        data: data.values,
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255,99,132,0.2)',
+                        borderWidth: 1,
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Month' } },
+                        y: { title: { display: true, text: 'Price' } }
+                    }
+                }
+            });
+        }
+
+        function renderUnitsSoldChart(data) {
+            const ctx = document.getElementById('unitsSoldChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: data.values,
+                        backgroundColor: '#36A2EB'
+                    }]
+                }
+            });
+        }
+
+        function renderRevenueChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data.values,
+                        backgroundColor: '#4BC0C0'
+                    }]
+                }
+            });
+        }
+
+        function renderCountryChart(data) {
+            const ctx = document.getElementById('countryChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                    }]
+                }
+            });
+        }
+
+        function renderTimeChart(data) {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Time of Purchase',
+                        data: data.values,
+                        backgroundColor: '#FFCE56'
+                    }]
+                }
+            });
+        }
+
+        function renderPaymentChart(data) {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                    }]
+                }
+            });
+        }
+
+        function renderAgeGroupChart(data) {
+            const ctx = document.getElementById('ageGroupChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Age Groups',
+                        data: data.values,
+                        backgroundColor: '#9966FF'
+                    }]
+                }
+            });
+        }
+
+        function renderGenderChart(data) {
+            const ctx = document.getElementById('genderChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female', 'Other'],
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56']
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>

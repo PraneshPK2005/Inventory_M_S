@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            color: #007bff;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Search and Filter Section */
+        #search {
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #ced4da;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #search:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #clear_filters {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #clear_filters:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            background-color: #fff;
+            border-collapse: collapse;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        thead th {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            border-bottom: 2px solid #0056b3;
+        }
+
+        tbody td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #f7faff;
+        }
+
+        tbody tr:hover {
+            background-color: #e6f2ff;
+        }
+
+        tbody tr td {
+            color: #333;
+        }
+
+        /* Buttons and Inputs */
+        button, input {
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"] {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            #filter_quantity_min, #filter_quantity_max {
+                margin-bottom: 10px;
+            }
+
+            table thead {
+                display: none;
+            }
+
+            table tbody td {
+                display: block;
+                text-align: left;
+                padding: 10px;
+                border-bottom: none;
+            }
+
+            table tbody tr {
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                background-color: #fff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Order Management</h2>
+        <!-- Search Bar -->
+        <input type="text" id="search" class="form-control mb-4" placeholder="Search by Product Name or Code">
+
+        <!-- Filter Section -->
+        <div class="mb-4">
+            <h5>Filter Orders</h5>
+            <div class="form-row">
+                <div class="col">
+                    <label for="filter_payment_mode">Payment Mode</label>
+                    <select id="filter_payment_mode" class="form-control">
+                        <option value="">All</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="Online">Online</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="filter_date">Date of Order</label>
+                    <input type="date" id="filter_date" class="form-control">
+                </div>
+                <div class="col">
+                    <label for="filter_quantity">Quantity Range</label>
+                    <input type="number" id="filter_quantity_min" placeholder="Min" class="form-control mb-2">
+                    <input type="number" id="filter_quantity_max" placeholder="Max" class="form-control">
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" id="clear_filters">Clear Filters</button>
+        </div>
+
+        <!-- Orders Table -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Product Name</th>
+                    <th>Product Code</th>
+                    <th>Quantity</th>
+                    <th>Cost</th>
+                    <th>Customer Name</th>
+                    <th>Customer Address</th>
+                    <th>Payment Mode</th>
+                    <th>Country</th>
+                    <th>Order Date</th>
+                </tr>
+            </thead>
+            <tbody id="orders_table">
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order[0] }}</td>
+                    <td>{{ order[1] }}</td>
+                    <td>{{ order[2] }}</td>
+                    <td>{{ order[3] }}</td>
+                    <td>${{ order[4] }}</td>
+                    <td>{{ order[5] }}</td>
+                    <td>{{ order[6] }}</td>
+                    <td>{{ order[7] }}</td>
+                    <td>{{ order[8] }}</td>
+                    <td>{{ order[9] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('search');
+        const filterPaymentMode = document.getElementById('filter_payment_mode');
+        const filterDate = document.getElementById('filter_date');
+        const filterQuantityMin = document.getElementById('filter_quantity_min');
+        const filterQuantityMax = document.getElementById('filter_quantity_max');
+        const ordersTable = document.getElementById('orders_table');
+        const clearFilters = document.getElementById('clear_filters');
+
+        // Search functionality
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            filterOrders();
+        });
+
+        // Filter functionality
+        [filterPaymentMode, filterDate, filterQuantityMin, filterQuantityMax].forEach(filter => {
+            filter.addEventListener('input', filterOrders);
+        });
+
+        // Clear filters
+        clearFilters.addEventListener('click', () => {
+            filterPaymentMode.value = '';
+            filterDate.value = '';
+            filterQuantityMin.value = '';
+            filterQuantityMax.value = '';
+            searchInput.value = '';
+            filterOrders();
+        });
+
+        function filterOrders() {
+            const searchQuery = searchInput.value.toLowerCase();
+            const paymentMode = filterPaymentMode.value;
+            const date = filterDate.value; // Just the date part from input
+            const quantityMin = parseInt(filterQuantityMin.value, 10) || 0;
+            const quantityMax = parseInt(filterQuantityMax.value, 10) || Infinity;
+
+            Array.from(ordersTable.children).forEach(row => {
+                const productName = row.children[1].textContent.toLowerCase();
+                const productCode = row.children[2].textContent.toLowerCase();
+                const quantity = parseInt(row.children[3].textContent, 10);
+                const payment = row.children[7].textContent;
+                const orderDate = row.children[9].textContent.split(' ')[0]; // Only the date part (yyyy-mm-dd)
+
+                const matchesSearch = productName.includes(searchQuery) || productCode.includes(searchQuery);
+                const matchesPaymentMode = !paymentMode || payment === paymentMode;
+                const matchesDate = !date || orderDate === date; // Match only the date part
+                const matchesQuantity = quantity >= quantityMin && quantity <= quantityMax;
+
+                row.style.display = matchesSearch && matchesPaymentMode && matchesDate && matchesQuantity ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

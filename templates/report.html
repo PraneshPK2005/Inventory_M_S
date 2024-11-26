@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report</title>
+    <style>
+        /* Add styles for better presentation */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Inventory Management Report</h1>
+
+    <h2>Product Price Changes</h2>
+    {% if price_changes %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Last Updated</th>
+        </tr>
+        {% for change in price_changes %}
+        <tr>
+            <td>{{ change.name }}</td>
+            <td>{{ change.price }}</td>
+            <td>{{ change.last_updated }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No recent price changes.</p>
+    {% endif %}
+
+    <h2>Minimum Quantity Alerts</h2>
+    {% if min_quantity_alerts %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+        {% for alert in min_quantity_alerts %}
+        <tr>
+            <td>{{ alert.name }}</td>
+            <td>{{ alert.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No products at minimum quantity.</p>
+    {% endif %}
+
+    <h2>Unsold Products</h2>
+    {% if unsold_products %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Code</th>
+        </tr>
+        {% for product in unsold_products %}
+        <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.code }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>All products have been sold at least once.</p>
+    {% endif %}
+
+    <h2>Most Sold Product Category</h2>
+    {% if most_sold_category %}
+    <p>Category: {{ most_sold_category.category_name }}</p>
+    <p>Total Sold: {{ most_sold_category.total_quantity }}</p>
+    {% else %}
+    <p>No category data available.</p>
+    {% endif %}
+
+    <h2>Restock Alerts</h2>
+    {% if restock_alerts %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Total Sold</th>
+            <th>Remaining Quantity</th>
+        </tr>
+        {% for alert in restock_alerts %}
+        <tr>
+            <td>{{ alert.name }}</td>
+            <td>{{ alert.total_sold }}</td>
+            <td>{{ alert.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No restock alerts for this month.</p>
+    {% endif %}
+</body>
+</html>

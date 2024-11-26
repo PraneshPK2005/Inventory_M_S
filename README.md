@@ -3,13 +3,24 @@ database structure
 create database intern;
 
 
+
+
+
 use intern;
+
+
+
+
 
 
 CREATE TABLE categories (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
+
+
+
+
 
 
 CREATE TABLE orders (
@@ -31,6 +42,9 @@ CREATE TABLE orders (
 );
 
 
+
+
+
 CREATE TABLE products (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -47,6 +61,9 @@ CREATE TABLE products (
 );
 
 
+
+
+
 CREATE TABLE sales (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
@@ -61,6 +78,9 @@ CREATE TABLE sales (
 );
 
 
+
+
+
 CREATE TABLE users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -69,12 +89,19 @@ CREATE TABLE users (
 );
 
 
+
+
+
+
 CREATE TABLE password_reset_requests (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     otp VARCHAR(6) NOT NULL,
     request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
 
 
 INSERT INTO products (id, name, code, description, price, quantity, image_url, min_quantity, last_sold_date, last_updated, category_id)
@@ -97,6 +124,9 @@ VALUES
 (29, 'Air Purifier', 'HOME004', 'HEPA air purifier for clean indoor air.', 199.99, 9, 'https://example.com/images/air_purifier.jpg', 10, '2024-11-25', NULL, 4);
 
 
+
+
+
 INSERT INTO sales (id, product_id, product_name, product_code, quantity, payment_mode, country, total_price, order_date)
 VALUES
 (1, 14, 'Smartphone', 'ELEC001', 2, NULL, NULL, 1399.98, '2024-11-25 11:36:15'),
@@ -116,6 +146,10 @@ VALUES
 (15, 15, 'Laptop', 'ELEC002', 1, 'Card', NULL, 1000.00, '2024-11-26 00:51:55');
 
 
+
+
+
+
 INSERT INTO orders (id, product_id, product_name, product_code, quantity, cost, total_price, customer_name, customer_address, payment_mode, order_date, country, age_range, gender)
 VALUES
 (11, 14, 'Smartphone', 'ELEC001', 2, 15000.00, 30000.00, 'Alice Johnson', '123 Elm Street, NY', 'Cash', '2024-11-01 10:15:30', 'USA', '18-25', 'Female'),
@@ -126,6 +160,10 @@ VALUES
 (16, 16, 'Tablet', 'ELEC003', 2, 25000.00, 50000.00, 'David Lee', '987 Cedar St, NJ', 'UPI', '2024-11-09 13:45:30', 'India', '26-35', 'Male'),
 (17, 17, 'Headphones', 'ELEC004', 5, 2000.00, 10000.00, 'Chris Evans', '123 Elm Street, NY', 'Cash', '2024-11-04 17:30:45', 'USA', '36-45', 'Male'),
 (18, 17, 'Headphones', 'ELEC004', 10, 2000.00, 20000.00, 'Linda Green', '456 Oak Avenue, LA', 'Card', '2024-11-08 20:15:00', 'USA', '46-55', 'Female');
+
+
+
+
 
 
 INSERT INTO users (id, email, password, created_at)

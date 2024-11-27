@@ -8,50 +8,43 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Place Your Order</h2>
-
-        <!-- Selected Products -->
-        <div id="order_summary">
-            <h4>Selected Products</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Code</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.code }}</td>
-                        <td>${{ product.price }}</td>
-                        <td>{{ product.quantity }}</td>
-                        <td>${{ product.price * product.quantity }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="4">Grand Total</th>
-                        <th>${{ total_cost }}</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <!-- Customer Details Form -->
+        <h2>Order Summary</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.code }}</td>
+                    <td>${{ product.price }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>${{ product.cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4">Total Cost</th>
+                    <th>${{ total_cost }}</th>
+                </tr>
+            </tfoot>
+        </table>
+        
         <form action="{{ url_for('confirm_order') }}" method="POST">
             {% for product in products %}
             <input type="hidden" name="product_id[]" value="{{ product.id }}">
             <input type="hidden" name="quantity[]" value="{{ product.quantity }}">
             {% endfor %}
-
             <div class="form-group">
-                <label for="customer_name">Name:</label>
+                <label for="customer_name">Customer Name:</label>
                 <input type="text" name="customer_name" id="customer_name" class="form-control" required>
             </div>
             <div class="form-group">
@@ -64,56 +57,31 @@
                     <option value="Cash">Cash</option>
                     <option value="Card">Card</option>
                     <option value="UPI">UPI</option>
-                    
-                    
                 </select>
             </div>
             <div class="form-group">
                 <label for="country">Country:</label>
                 <select name="country" id="country" class="form-control" required>
-                    <option value="">Select Country</option>
                     <option value="USA">United States</option>
                     <option value="Canada">Canada</option>
                     <option value="UK">United Kingdom</option>
                     <option value="India">India</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Other">Other</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="age_range">Age Range:</label>
                 <select name="age_range" id="age_range" class="form-control" required>
-                    <option value="">Select Age Range</option>
-                    <option value="Under 18">Under 18</option>
                     <option value="18-25">18-25</option>
                     <option value="26-35">26-35</option>
-                    <option value="36-45">36-45</option>
-                    <option value="46-60">46-60</option>
-                    <option value="Above 60">Above 60</option>
                 </select>
             </div>
-
-            <!-- Gender Selection -->
             <div class="form-group">
                 <label>Gender:</label><br>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="gender" value="Male" id="male" required>
-                    <label class="form-check-label" for="male">Male</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="gender" value="Female" id="female" required>
-                    <label class="form-check-label" for="female">Female</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="gender" value="Other" id="other" required>
-                    <label class="form-check-label" for="other">Other</label>
-                </div>
+                <input type="radio" name="gender" value="Male" required> Male
+                <input type="radio" name="gender" value="Female" required> Female
             </div>
-        
             <button type="submit" class="btn btn-success">Confirm Order</button>
         </form>
-        
     </div>
 </body>
 </html>

@@ -249,7 +249,7 @@ def place_order():
     # Data from the ordering page
     selected_products = request.form.getlist('product_id')
     quantities = request.form.getlist('quantity')
-
+    
     conn = get_db_connection()
     cursor = conn.cursor()
 

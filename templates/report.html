@@ -1,109 +1,261 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management Report</title>
     <style>
         /* Add styles for better presentation */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        h1, h2 {
+            color: #333;
+            cursor: pointer; /* Pointer to indicate clickable */
+            transition: color 0.3s ease;
+        }
+
+        h2:hover {
+            color: #007bb5; /* Change color on hover */
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            opacity: 0; /* Start invisible for fade-in effect */
+            transition: opacity 0.5s ease;
         }
+
+        table.show {
+            opacity: 1; /* Fade in */
+        }
+
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #ccc;
         }
+
         th, td {
             padding: 10px;
             text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e0f7fa; /* Light blue on hover */
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e7f3fe;
+            color: #31708f;
+        }
+
+        .no-data {
+            color: #999;
+            font-style: italic;
+        }
+
+        button {
+            border: 0;
+            background: #0087cc;
+            border-radius: 4px;
+            box-shadow: 0 5px 0 #006599;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            margin: 0;
+            outline: 0;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #007bb5;
+            transform: translateY(-3px);
+            box-shadow: 0 3px 0 #005f8c;
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #005f8c;
         }
     </style>
 </head>
 <body>
     <h1>Inventory Management Report</h1>
 
-    <h2>Product Price Changes</h2>
-    {% if price_changes %}
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Last Updated</th>
-        </tr>
-        {% for change in price_changes %}
-        <tr>
-            <td>{{ change.name }}</td>
-            <td>{{ change.price }}</td>
-            <td>{{ change.last_updated }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No recent price changes.</p>
-    {% endif %}
+    <h2 onclick="scrollToSection('price-changes')">Product Price Changes</h2>
+    <div id="price-changes">
+        {% if price_changes %}
+        <table class="fade-in">
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Last Updated</th>
+            </tr>
+            {% for change in price_changes %}
+            <tr>
+                <td>{{ change.name }}</td>
+                <td>{{ change.price }}</td>
+                <td>{{ change.last_updated }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">No recent price changes.</p>
+        {% endif %}
+    </div>
 
-    <h2>Minimum Quantity Alerts</h2>
-    {% if min_quantity_alerts %}
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Quantity</th>
-        </tr>
-        {% for alert in min_quantity_alerts %}
-        <tr>
-            <td>{{ alert.name }}</td>
-            <td>{{ alert.quantity }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No products at minimum quantity.</p>
-    {% endif %}
+    <h2 onclick="scrollToSection('min-quantity-alerts')">Minimum Quantity Alerts</h2>
+    <div id="min-quantity-alerts">
+        {% if min_quantity_alerts %}
+        <table class="fade-in">
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+            </tr>
+            {% for alert in min_quantity_alerts %}
+            <tr>
+                <td>{{ alert.name }}</td>
+                <td>{{ alert.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">No products at minimum quantity.</p>
+        {% endif %}
+    </div>
 
-    <h2>Unsold Products</h2>
-    {% if unsold_products %}
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Code</th>
-        </tr>
-        {% for product in unsold_products %}
-        <tr>
-            <td>{{ product.id }}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.code }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>All products have been sold at least once.</p>
-    {% endif %}
+    
+    <h2 onclick="scrollToSection('unsold-products')">Unsold Products</h2>
+    <div id="unsold-products">
+        {% if unsold_products %}
+        <table class="fade-in">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Code</th>
+            </tr>
+            {% for product in unsold_products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.code }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">All products have been sold at least once.</p>
+        {% endif %}
+    </div>
 
-    <h2>Most Sold Product Category</h2>
-    {% if most_sold_category %}
-    <p>Category: {{ most_sold_category.category_name }}</p>
-    <p>Total Sold: {{ most_sold_category.total_quantity }}</p>
-    {% else %}
-    <p>No category data available.</p>
-    {% endif %}
+    <h2 onclick="scrollToSection('most-sold-category')">Most Sold Product Category</h2>
+    <div id="most-sold-category">
+        {% if most_sold_category %}
+        <p>Category: <strong>{{ most_sold_category.category_name }}</strong></p>
+        <p>Total Sold: <strong>{{ most_sold_category.total_quantity }}</strong></p>
+        {% else %}
+        <p class="no-data">No category data available.</p>
+        {% endif %}
+    </div>
 
-    <h2>Restock Alerts</h2>
-    {% if restock_alerts %}
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Total Sold</th>
-            <th>Remaining Quantity</th>
-        </tr>
-        {% for alert in restock_alerts %}
-        <tr>
-            <td>{{ alert.name }}</td>
-            <td>{{ alert.total_sold }}</td>
-            <td>{{ alert.quantity }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No restock alerts for this month.</p>
-    {% endif %}
+    <h2 onclick="scrollToSection('restock-alerts')">Restock Alerts</h2>
+    <div id="restock-alerts">
+        {% if restock_alerts %}
+        <table class="fade-in">
+            <tr>
+                <th>Name</th>
+                <th>Total Sold</th>
+                <th>Remaining Quantity</th>
+            </tr>
+            {% for alert in restock_alerts %}
+            <tr>
+                <td>{{ alert.name }}</td>
+                <td>{{ alert.total_sold }}</td>
+                <td>{{ alert.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">No restock alerts for this month.</p>
+        {% endif %}
+    </div>
+
+    <h2 onclick="scrollToSection('lowest-priced-products')">Lowest Priced Products</h2>
+    <div id="lowest-priced-products">
+        {% if lowest_priced_products %}
+        <table class="fade-in">
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Category</th>
+            </tr>
+            {% for product in lowest_priced_products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.category_name }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">No products available.</p>
+        {% endif %}
+    </div>
+
+    <h2 onclick="scrollToSection('monthly-sales-growth')">Monthly Sales Growth Rate</h2>
+    <div id="monthly-sales-growth">
+        {% if monthly_sales_growth_rate %}
+        <table class="fade-in">
+            <tr>
+                <th>Month</th>
+                <th>Growth Rate (%)</th>
+            </tr>
+            {% for i in range(monthly_sales_growth_rate|length) %}
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ monthly_sales_growth_rate[i] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-data">No sales data available for growth rate calculation.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Smooth scrolling to sections
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Fade-in effect for tables
+        document.querySelectorAll('table').forEach(table => {
+            table.classList.add('show');
+        });
+    </script>
 </body>
 </html>

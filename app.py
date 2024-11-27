@@ -26,23 +26,6 @@ def get_db_connection():
 def home():
     return render_template('home.html')
 
-# Create Account Page
-@app.route('/create_account', methods=['GET', 'POST'])
-def create_account():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (email, password) VALUES (%s, %s)", (email, password))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
-        return redirect(url_for('login'))
-    return render_template('create_account.html')
-
 # Login Page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -59,7 +42,7 @@ def login():
         
         if user:
             session['user'] = email
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('main'))
         else:
             flash('Invalid email or password', 'danger')
     
@@ -146,9 +129,9 @@ def reset_password():
     return render_template('reset_password.html')
 
 # Dashboard Page
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
+@app.route('/main')
+def main():
+    return render_template('main.html')
 
 # Inventory Page
 @app.route('/inventory', methods=['GET', 'POST'])
@@ -413,10 +396,9 @@ def report():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # Debug: Log starting the report generation
         print("Starting to generate the report.")
 
-        # Query 1: Product Price Changes
+        # Existing Queries
         print("Querying product price changes...")
         cursor.execute('''
             SELECT name, price, last_updated
@@ -425,9 +407,7 @@ def report():
             ORDER BY last_updated DESC;
         ''')
         price_changes = cursor.fetchall()
-        print(f"Price changes fetched: {len(price_changes)} records.")  # Debugging count
 
-        # Query 2: Products at Minimum Quantity
         print("Querying products at minimum quantity...")
         cursor.execute('''
             SELECT name, quantity
@@ -435,9 +415,7 @@ def report():
             WHERE quantity <= min_quantity;
         ''')
         min_quantity_alerts = cursor.fetchall()
-        print(f"Minimum quantity alerts fetched: {len(min_quantity_alerts)} records.")  # Debugging count
 
-        # Query 3: Unsold Products
         print("Querying unsold products...")
         cursor.execute('''
             SELECT p.id, p.name, p.code
@@ -446,9 +424,7 @@ def report():
             WHERE s.product_id IS NULL;
         ''')
         unsold_products = cursor.fetchall()
-        print(f"Unsold products fetched: {len(unsold_products)} records.")  # Debugging count
 
-        # Query 4: Most Sold Product Categories
         print("Querying most sold product categories...")
         cursor.execute('''
             SELECT c.name AS category_name, SUM(s.quantity) AS total_quantity
@@ -460,9 +436,7 @@ def report():
             LIMIT 1;
         ''')
         most_sold_category = cursor.fetchone()
-        print(f"Most sold category fetched: {most_sold_category}")  # Debugging content
 
-        # Query 5: Restock Alerts for Most Sold Products
         print("Querying restock alerts for most sold products...")
         cursor.execute('''
             SELECT p.name, SUM(s.quantity) AS total_sold, p.quantity
@@ -475,21 +449,46 @@ def report():
             ORDER BY total_sold DESC;
         ''')
         restock_alerts = cursor.fetchall()
-        print(f"Restock alerts fetched: {len(restock_alerts)} records.")  # Debugging count
 
-        # Debug: Log successful completion
+        print("Querying monthly sales growth rate...")
+        cursor.execute('''
+            SELECT EXTRACT(MONTH FROM order_date) AS month, SUM(total_price) AS total_sales
+            FROM sales
+            GROUP BY month
+            ORDER BY month;
+        ''')
+        monthly_sales = cursor.fetchall()
+
+        monthly_sales_growth_rate = []
+        for i in range(1, len(monthly_sales)):
+            previous_month_sales = monthly_sales[i - 1]['total_sales']
+            current_month_sales = monthly_sales[i]['total_sales']
+            growth_rate = ((current_month_sales - previous_month_sales) / previous_month_sales) * 100 if previous_month_sales > 0 else 0
+            monthly_sales_growth_rate.append(round(growth_rate, 2))
+
+        # New Query: Lowest-priced products for the current month
+        print("Querying lowest-priced products for the current month...")
+        cursor.execute('''
+            SELECT p.name, p.price, c.name AS category_name
+            FROM products p
+            JOIN categories c ON p.category_id = c.id
+            ORDER BY p.price ASC
+            LIMIT 5;
+        ''')
+        lowest_priced_products = cursor.fetchall()
+
         print("Report generation completed successfully.")
 
-        # Pass results to the template
         return render_template('report.html',
                                price_changes=price_changes,
                                min_quantity_alerts=min_quantity_alerts,
                                unsold_products=unsold_products,
                                most_sold_category=most_sold_category,
-                               restock_alerts=restock_alerts)
+                               restock_alerts=restock_alerts,
+                               monthly_sales_growth_rate=monthly_sales_growth_rate,
+                               lowest_priced_products=lowest_priced_products)
 
     except Exception as e:
-        # Debug: Log error
         print(f"Error in report route: {e}")
         flash("An error occurred while generating the report.")
         return redirect(url_for('dashboard'))
@@ -497,8 +496,8 @@ def report():
     finally:
         cursor.close()
         conn.close()
-        # Debug: Log closing database connection
         print("Database connection closed.")
+
 
 
 
@@ -689,10 +688,6 @@ def get_customer_gender():
 
 
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 @app.route('/specific_product_analysis')
 def specific_product_analysis():
     try:
@@ -700,16 +695,12 @@ def specific_product_analysis():
         cursor = conn.cursor()
         cursor.execute("SELECT name, code FROM products")
         products = cursor.fetchall()
-        
-        # Log fetched product data
-        logger.debug(f"Fetched products: {products}")
 
         # Convert to a list of dictionaries
         products = [{"name": product[0], "code": product[1]} for product in products]
         return render_template('specific_product_analysis.html', products=products)
 
     except Exception as e:
-        logger.error(f"Error fetching product data: {e}")
         return {"error": "Failed to fetch product data"}, 500
 
     finally:
@@ -717,7 +708,7 @@ def specific_product_analysis():
         conn.close()
 
 
-@app.route('/get-price-time-data/<code>', methods=['GET'])
+@app.route('/get-product-price-time/<code>', methods=['GET'])
 def get_price_time_data(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -731,8 +722,6 @@ def get_price_time_data(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched price time data for {code}: {rows}")
-        
         price_time = {
             "labels": [row['month'] for row in rows],
             "values": [float(row['avg_price']) for row in rows]
@@ -740,7 +729,6 @@ def get_price_time_data(code):
         return jsonify(price_time)
 
     except Exception as e:
-        logger.error(f"Error fetching price time data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -748,7 +736,7 @@ def get_price_time_data(code):
         conn.close()
 
 
-@app.route('/get-units-sold-data/<code>', methods=['GET'])
+@app.route('/get-product-units-sold/<code>', methods=['GET'])
 def get_units_sold_data(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -762,8 +750,6 @@ def get_units_sold_data(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched units sold data for {code}: {rows}")
-        
         units_sold = {
             "labels": [row['month'] for row in rows],
             "values": [int(row['units_sold']) if row['units_sold'] else 0 for row in rows]
@@ -771,7 +757,6 @@ def get_units_sold_data(code):
         return jsonify(units_sold)
 
     except Exception as e:
-        logger.error(f"Error fetching units sold data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -779,7 +764,7 @@ def get_units_sold_data(code):
         conn.close()
 
 
-@app.route('/get-revenue-data/<code>', methods=['GET'])
+@app.route('/get-product-revenue/<code>', methods=['GET'])
 def get_revenue_data(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -793,8 +778,6 @@ def get_revenue_data(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched revenue data for {code}: {rows}")
-        
         revenue = {
             "labels": [row['month'] for row in rows],
             "values": [float(row['revenue']) if row['revenue'] else 0.0 for row in rows]
@@ -802,7 +785,6 @@ def get_revenue_data(code):
         return jsonify(revenue)
 
     except Exception as e:
-        logger.error(f"Error fetching revenue data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -810,7 +792,7 @@ def get_revenue_data(code):
         conn.close()
 
 
-@app.route('/get-country-distribution/<code>', methods=['GET'])
+@app.route('/get-product-country-distribution/<code>', methods=['GET'])
 def get_country_distribution(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -823,8 +805,6 @@ def get_country_distribution(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched country distribution data for {code}: {rows}")
-        
         country_distribution = {
             "labels": [row['country'] for row in rows],
             "values": [row['customer_count'] for row in rows]
@@ -832,7 +812,6 @@ def get_country_distribution(code):
         return jsonify(country_distribution)
 
     except Exception as e:
-        logger.error(f"Error fetching country distribution data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -840,7 +819,7 @@ def get_country_distribution(code):
         conn.close()
 
 
-@app.route('/get-time-purchase-data/<code>', methods=['GET'])
+@app.route('/get-product-time-of-purchase/<code>', methods=['GET'])
 def get_time_purchase_data(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -850,12 +829,10 @@ def get_time_purchase_data(code):
         FROM orders
         WHERE product_code = %s
         GROUP BY hour
-        ORDER BY hour
+ ORDER BY hour
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched time purchase data for {code}: {rows}")
-        
         time_purchase = {
             "labels": [f"{row['hour']}:00" for row in rows],
             "values": [row['purchases'] for row in rows]
@@ -863,7 +840,6 @@ def get_time_purchase_data(code):
         return jsonify(time_purchase)
 
     except Exception as e:
-        logger.error(f"Error fetching time purchase data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -871,7 +847,7 @@ def get_time_purchase_data(code):
         conn.close()
 
 
-@app.route('/get-payment-modes/<code>', methods=['GET'])
+@app.route('/get-product-payment-modes/<code>', methods=['GET'])
 def get_payment_modes(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -884,8 +860,6 @@ def get_payment_modes(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched payment modes data for {code}: {rows}")
-        
         payment_modes = {
             "labels": [row['payment_mode'] for row in rows],
             "values": [row['count'] for row in rows]
@@ -893,7 +867,6 @@ def get_payment_modes(code):
         return jsonify(payment_modes)
 
     except Exception as e:
-        logger.error(f"Error fetching payment modes data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -901,7 +874,7 @@ def get_payment_modes(code):
         conn.close()
 
 
-@app.route('/get-age-distribution/<code>', methods=['GET'])
+@app.route('/get-product-age-distribution/<code>', methods=['GET'])
 def get_age_distribution(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -922,8 +895,6 @@ def get_age_distribution(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched age distribution data for {code}: {rows}")
-        
         age_distribution = {
             "labels": [row['age_group'] for row in rows],
             "values": [row['count'] for row in rows]
@@ -931,7 +902,6 @@ def get_age_distribution(code):
         return jsonify(age_distribution)
 
     except Exception as e:
-        logger.error(f"Error fetching age distribution data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
@@ -939,7 +909,7 @@ def get_age_distribution(code):
         conn.close()
 
 
-@app.route('/get-gender-distribution/<code>', methods=['GET'])
+@app.route('/get-product-gender-distribution/<code>', methods=['GET'])
 def get_gender_distribution(code):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -952,8 +922,6 @@ def get_gender_distribution(code):
         """, (code,))
         
         rows = cursor.fetchall()
-        logger.debug(f"Fetched gender distribution data for {code}: {rows}")
-        
         gender_distribution = {
             "labels": [row['gender'] for row in rows],
             "values": [row['count'] for row in rows]
@@ -961,12 +929,55 @@ def get_gender_distribution(code):
         return jsonify(gender_distribution)
 
     except Exception as e:
-        logger.error(f"Error fetching gender distribution data for {code}: {e}")
         return {"error": str(e)}, 500
 
     finally:
         cursor.close()
         conn.close()
+
+
+
+@app.route('/dashboard')
+def dashboard():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Fetch top 5 most sold products
+        cursor.execute('''
+            SELECT p.id, p.name, p.description, p.image_url, SUM(s.quantity) AS total_sold
+            FROM sales s
+            JOIN products p ON s.product_id = p.id
+            GROUP BY p.id, p.name, p.description, p.image_url
+            ORDER BY total_sold DESC
+            LIMIT 5;
+        ''')
+        top_sold_products = cursor.fetchall()
+
+        # Fetch top 5 minimum cost products
+        cursor.execute('''
+            SELECT id, name, description, image_url, price
+            FROM products
+            ORDER BY price ASC
+            LIMIT 5;
+        ''')
+        min_cost_products = cursor.fetchall()
+
+        return render_template(
+            'dashboard.html',
+            top_sold_products=top_sold_products,
+            min_cost_products=min_cost_products
+        )
+
+    except Exception as e:
+        print(f"Error fetching top products: {e}")
+        flash("An error occurred while fetching top products.")
+        return redirect(url_for('dashboard'))
+
+    finally:
+        cursor.close()
+        conn.close()
+
 
 
 '''@app.route('/get-product-data/<code>', methods=['GET'])

@@ -4,14 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        /* General reset */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: url('static/images/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .form-container {
+            text-align: center;
+            color: #ffffff;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            /* Removed background */
+        }
+
+        .form-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px; /* Rounded corners for inputs */
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2); /* Slightly transparent input background */
+        }
+
+        .input-group i {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            margin-right: 10px; /* Spacing between icon and input */
+        }
+
+        .form-container input {
+            flex: 1; /* Makes the input fill the remaining space */
+            background: transparent;
+            border: none;
+            padding: 5px; /* Padding inside the input */
+            font-size: 1rem;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .form-container input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-container button {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .form-container button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-container a {
+            display: block;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-container a:hover {
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST">
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Submit</button>
-    </form>
-    <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+    <div class="form-container">
+        <h1>Login</h1>
+        <form method="POST">
+            <!-- Email Input -->
+            <div class="input-group">
+                <i class="bx bx-envelope"></i> <!-- Boxicons Email Icon -->
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <!-- Password Input -->
+            <div class="input-group">
+                <i class="bx bx-lock-alt"></i> <!-- Boxicons Password Icon -->
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit">Sign In</button>
+        </form>
+        <a href="/forgot_password">Forgot Password?</a>
+    </div>
 </body>
 </html>

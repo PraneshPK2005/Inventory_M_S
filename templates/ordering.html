@@ -147,66 +147,86 @@
         </h2>
 
         <!-- Search Bar -->
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="search" class="form-control mb-4" placeholder="Search by name or code">
-        </div>
+        <!-- Search Bar -->
+<div class="search-container">
+    <i class="fas fa-search search-icon"></i>
+    <input type="text" id="search" class="form-control mb-4" placeholder="Search by name or code">
+</div>
 
-        <!-- Products Listing -->
-        <form action="/place_order" method="POST">
-            <div class="carousel-container" id="product_list">
-                {% for product in products %}
-                <div class="product-tile">
-                    <div class="card">
-                        <!-- Product Image -->
-                        <img 
-                            src="{{ product[6] }}" 
-                            alt="{{ product[1] }}" 
-                            class="card-img-top" 
-                            onerror="this.src='https://via.placeholder.com/300x200?text=No+Image+Available';"
-                        />
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product[1] }}</h5>
-                            <p><strong>Code:</strong> {{ product[2] }}</p>
-                            <p><strong>Price:</strong> ${{ product[3] }}</p>
-                            <p><strong>Description:</strong> {{ product[4] }}</p>
-                            <input type="hidden" name="product_id" value="{{ product[0] }}">
-                            <div class="form-group">
-                                <label>Quantity</label>
-                                <input type="number" name="quantity" min="0" class="form-control mt-2"  value="0">
-                            </div>
-                        </div>
+<!-- Category Filter Dropdown -->
+<div class="form-group">
+    <select id="categoryFilter" class="form-control">
+        <option value="all">All Categories</option>
+        {% for category in categories %}
+        <option value="{{ category[0] }}">{{ category[0] }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Products Listing -->
+<form action="/place_order" method="POST">
+    <div class="carousel-container" id="product_list">
+        {% for product in products %}
+        <div class="product-tile" data-category="{{ product[5] }}">
+            <div class="card">
+                <!-- Product Image -->
+                <img 
+                    src="{{ product[6] }}" 
+                    alt="{{ product[1] }}" 
+                    class="card-img-top" 
+                    onerror="this.src='https://via.placeholder.com/300x200?text=No+Image+Available';"
+                />
+                <div class="card-body">
+                    <h5 class="card-title">{{ product[1] }}</h5>
+                    <p><strong>Code:</strong> {{ product[2] }}</p>
+                    <p><strong>Price:</strong> ${{ product[3] }}</p>
+                    <p><strong>Description:</strong> {{ product[4] }}</p>
+                    <input type="hidden" name="product_id" value="{{ product[0] }}">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" name="quantity" min="0" class="form-control mt-2"  value="0">
                     </div>
                 </div>
-                {% endfor %}
             </div>
-
-            <!-- Place Order Button -->
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">Place Order</button>
-            </div>
-        </form>
+        </div>
+        {% endfor %}
     </div>
 
-    <script>
-        // Cursor-based horizontal scroll effect
-        document.querySelector('.carousel-container').addEventListener('mousemove', function (e) {
-            const x = e.clientX / window.innerWidth * 100; 
-            this.scrollTo({
-                left: (this.scrollWidth * x) / 100,
-                behavior: 'smooth'
-            });
-        });
+    <!-- Place Order Button -->
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary">Place Order</button>
+    </div>
+</form>
 
-        // Search Functionality
-        document.getElementById('search').addEventListener('input', function () {
-            const query = this.value.toLowerCase();
-            document.querySelectorAll('.product-tile').forEach(tile => {
-                const name = tile.querySelector('.card-title').textContent.toLowerCase();
-                const code = tile.querySelector('p').textContent.toLowerCase();
-                tile.style.display = name.includes(query) || code.includes(query) ? '' : 'none';
-            });
+<script>
+    // Cursor-based horizontal scroll effect
+    document.querySelector('.carousel-container').addEventListener('mousemove', function (e) {
+        const x = e.clientX / window.innerWidth * 100; 
+        this.scrollTo({
+            left: (this.scrollWidth * x) / 100,
+            behavior: 'smooth'
         });
-    </script>
+    });
+
+    // Search Functionality
+    document.getElementById('search').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.product-tile').forEach(tile => {
+            const name = tile.querySelector('.card-title').textContent.toLowerCase();
+            const code = tile.querySelector('p').textContent.toLowerCase();
+            tile.style.display = name.includes(query) || code.includes(query) ? '' : 'none';
+        });
+    });
+
+    // Category Filter Functionality
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        const selectedCategory = this.value.toLowerCase();
+        document.querySelectorAll('.product-tile').forEach(tile => {
+            const category = tile.getAttribute('data-category').toLowerCase();
+            tile.style.display = selectedCategory === 'all' || category === selectedCategory ? '' : 'none';
+        });
+    });
+</script>
+
 </body>
 </html>

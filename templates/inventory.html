@@ -42,17 +42,27 @@
 
 <div class="container mt-5">
     <h2>Inventory</h2>
-    <!-- Search Bar -->
+    <!-- Category Filter and Search Bar -->
     <div class="row mb-4">
+        <div class="col-md-4">
+            <select id="category_filter" class="form-control">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <div class="col-md-6">
             <input type="text" id="search" class="form-control" placeholder="Search by name or code">
         </div>
+        
     </div>
+    
 
     <!-- Product Grid -->
     <div class="row" id="product_list">
         {% for product in products %}
-        <div class="col-md-3 product-tile" data-id="{{ product.id }}">
+        <div class="col-md-3 product-tile" data-id="{{ product.id }}" data-category="{{ product.category_id }}">
             <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid">
             <h5>{{ product.name }}</h5>
             <p>Code: {{ product.code }}</p>
@@ -105,23 +115,34 @@
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Search functionality
-        $('#search').on('input', function() {
-            const query = $(this).val().toLowerCase();
-            $('.product-tile').each(function() {
-                const name = $(this).find('h5').text().toLowerCase();
-                const code = $(this).find('p:first').text().toLowerCase();
-                if (name.includes(query) || code.includes(query)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
+    $(document).ready(function () {
+    function filterProducts() {
+        const selectedCategory = $('#category_filter').val(); // Get selected category
+        const searchQuery = $('#search').val().toLowerCase(); // Get search query
+
+        $('.product-tile').each(function () {
+            const category = $(this).data('category').toString();
+            const name = $(this).find('h5').text().toLowerCase();
+            const code = $(this).find('p:first').text().toLowerCase();
+
+            // Check if product matches the category and search query
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+            const matchesSearch = !searchQuery || name.includes(searchQuery) || code.includes(searchQuery);
+
+            if (matchesCategory && matchesSearch) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
         });
+    }
+
+    // Attach filter functionality
+        $('#category_filter, #search').on('input', filterProducts);
+        $('#filter_button').on('click', filterProducts);
 
         // Handle product click to expand
-        $('.product-tile').on('click', function() {
+        $('.product-tile').on('click', function () {
             const productId = $(this).data('id');
             const product = {{ products | tojson }};
             const selectedProduct = product.find(p => p.id === productId);
@@ -146,6 +167,7 @@
             $('#expanded_view').show();
         });
     });
+
 </script>
 </body>
 </html>

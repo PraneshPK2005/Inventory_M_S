@@ -149,12 +149,13 @@ def inventory():
             price = request.form['price']
             quantity = request.form['quantity']
             description = request.form['description']
+            category_id = request.form['category_id']  # Add category ID
 
             cursor.execute('''
                 UPDATE products
-                SET name = %s, code = %s, price = %s, quantity = %s, description = %s, last_updated = NOW()
+                SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, last_updated = NOW()
                 WHERE id = %s
-            ''', (name, code, price, quantity, description, product_id))
+            ''', (name, code, price, quantity, description, category_id, product_id))
 
         elif action == 'delete':
             cursor.execute('DELETE FROM products WHERE id = %s', (product_id,))
@@ -165,18 +166,37 @@ def inventory():
 
         return redirect(url_for('inventory'))
 
-    # GET request - Fetch and display products
-    search_query = request.args.get('search_code_name', '').strip()
+    # GET request - Fetch categories and products
+    selected_category = request.args.get('category', '').strip()
+    search_query = request.args.get('search', '').strip().lower()
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Fetch categories for the dropdown
+    cursor.execute("SELECT id, name FROM categories")
+    categories = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
+
+    # Fetch products based on selected category and search query
+    query = '''
+        SELECT p.id, p.name, p.code, p.description, p.price, p.quantity, p.image_url, c.name AS category_name, p.category_id
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+    '''
+    params = []
+
+    if selected_category:
+        query += " WHERE p.category_id = %s"
+        params.append(selected_category)
+
     if search_query:
-        cursor.execute("""
-            SELECT * FROM products 
-            WHERE code LIKE %s OR name LIKE %s
-        """, (f"%{search_query}%", f"%{search_query}%"))
-    else:
-        cursor.execute("SELECT * FROM products")
+        if selected_category:
+            query += " AND (LOWER(p.name) LIKE %s OR LOWER(p.code) LIKE %s)"
+        else:
+            query += " WHERE LOWER(p.name) LIKE %s OR LOWER(p.code) LIKE %s"
+        params.extend([f"%{search_query}%", f"%{search_query}%"])
+
+    cursor.execute(query, params)
 
     products = cursor.fetchall()
     cursor.close()
@@ -189,10 +209,13 @@ def inventory():
         'description': product[3],
         'price': product[4],
         'quantity': product[5],
-        'image_url': product[6]
+        'image_url': product[6],
+        'category_name': product[7],
+        'category_id': product[8]
     } for product in products]
 
-    return render_template('inventory.html', products=product_list)
+    return render_template('inventory.html', products=product_list, categories=categories)
+
 
 # ADD or Delete Product Page
 @app.route('/add_product', methods=['GET', 'POST'])
@@ -234,13 +257,18 @@ def ordering():
     cursor = conn.cursor()
     
     # Fetch all products
-    cursor.execute('SELECT id, name, code, price, description FROM products')
+    cursor.execute('SELECT id, name, code, price, description, category_name FROM products')
     products = cursor.fetchall()
+    
+    # Fetch distinct categories
+    cursor.execute('SELECT DISTINCT category_name FROM products')
+    categories = cursor.fetchall()
     
     cursor.close()
     conn.close()
 
-    return render_template('ordering.html', products=products)
+    return render_template('ordering.html', products=products, categories=categories)
+
 
 
 
@@ -736,6 +764,8 @@ def get_price_time_data(code):
         conn.close()
 
 
+
+
 @app.route('/get-product-units-sold/<code>', methods=['GET'])
 def get_units_sold_data(code):
     conn = get_db_connection()
@@ -963,10 +993,37 @@ def dashboard():
         ''')
         min_cost_products = cursor.fetchall()
 
+        # Fetch top-selling product for each category
+        cursor.execute('''
+            SELECT 
+                p.category_name,
+                p.id AS product_id,
+                p.name AS product_name,
+                p.description,
+                p.image_url,
+                SUM(s.quantity) AS total_sold
+            FROM sales s
+            JOIN products p ON s.product_id = p.id
+            GROUP BY p.category_name, p.id, p.name, p.description, p.image_url
+            HAVING total_sold = (
+                SELECT MAX(total_sold)
+                FROM (
+                    SELECT p.category_name, SUM(s.quantity) AS total_sold
+                    FROM sales s
+                    JOIN products p ON s.product_id = p.id
+                    GROUP BY p.category_name, p.id
+                ) subquery
+                WHERE subquery.category_name = p.category_name
+            )
+            ORDER BY p.category_name;
+        ''')
+        top_category_sales = cursor.fetchall()
+
         return render_template(
             'dashboard.html',
             top_sold_products=top_sold_products,
-            min_cost_products=min_cost_products
+            min_cost_products=min_cost_products,
+            top_category_sales=top_category_sales
         )
 
     except Exception as e:
@@ -977,8 +1034,6 @@ def dashboard():
     finally:
         cursor.close()
         conn.close()
-
-
 
 '''@app.route('/get-product-data/<code>', methods=['GET'])
 def get_product_data(code):

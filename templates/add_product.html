@@ -55,32 +55,57 @@
         <!-- Add Product Form -->
         <div id="add-form" class="form-section">
             <h3>Add Product</h3>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="add"> <!-- Hidden action field -->
+
+                <!-- Product Name -->
                 <div class="form-group">
                     <label for="name">Product Name</label>
                     <input type="text" id="name" name="name" required>
                 </div>
+
+                <!-- Product Code -->
                 <div class="form-group">
                     <label for="code">Product Code</label>
                     <input type="text" id="code" name="code" required>
                 </div>
+
+                <!-- Product Description -->
                 <div class="form-group">
                     <label for="description">Description</label>
                     <input type="text" id="description" name="description" required>
                 </div>
+
+                <!-- Product Price -->
                 <div class="form-group">
                     <label for="price">Price</label>
                     <input type="number" id="price" name="price" step="0.01" required>
                 </div>
+
+                <!-- Product Quantity -->
                 <div class="form-group">
                     <label for="quantity">Quantity</label>
                     <input type="number" id="quantity" name="quantity" required>
                 </div>
+
+                <!-- Category Dropdown -->
                 <div class="form-group">
-                    <label for="image_url">Image URL</label>
-                    <input type="url" id="image_url" name="image_url" required>
+                    <label for="category_id">Category</label>
+                    <select id="category_id" name="category_id" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category[0] }}">{{ category[1] }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+
+                <!-- Product Image Upload -->
+                <div class="form-group">
+                    <label for="image">Product Image</label>
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                </div>
+
+                <!-- Submit Button -->
                 <button type="submit" class="btn btn-success">Add Product</button>
             </form>
         </div>

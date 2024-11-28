@@ -4,6 +4,8 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from werkzeug.utils import secure_filename
+import os 
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -134,8 +136,19 @@ def main():
     return render_template('main.html')
 
 # Inventory Page
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed extensions
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/inventory', methods=['GET', 'POST'])
 def inventory():
+    UPLOAD_FOLDER = 'static/images'
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Define your upload folder
+    
     if request.method == 'POST':
         action = request.form['action']
         product_id = request.form['id']
@@ -143,24 +156,46 @@ def inventory():
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        # Initialize image_url variable (default to None)
+        image_url = None
+
+        # Handle image upload
+        if 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename != '':
+                filename = secure_filename(image.filename)
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                print(f"Saving image to: {image_path}")  # Debug: Check the path where the image is saved
+                image.save(image_path)
+                image_url = f"/{UPLOAD_FOLDER}/{filename}"
+                print(f"Image URL: {image_url}")  # Debug: Check the image URL being stored
+
+        # Modify product details in the database
         if action == 'modify':
             name = request.form['name']
             code = request.form['code']
             price = request.form['price']
             quantity = request.form['quantity']
             description = request.form['description']
-            category_id = request.form['category_id']  # Add category ID
+            category_id = request.form['category_id']  # Get category_id from the form
 
-            cursor.execute('''
-                UPDATE products
-                SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, last_updated = NOW()
-                WHERE id = %s
-            ''', (name, code, price, quantity, description, category_id, product_id))
+            if image_url:  # Update image_url only if a new image was uploaded
+                cursor.execute('''
+                    UPDATE products
+                    SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, image_url = %s, last_updated = NOW()
+                    WHERE id = %s
+                ''', (name, code, price, quantity, description, category_id, image_url, product_id))
+            else:  # If no image uploaded, only update other fields
+                cursor.execute('''
+                    UPDATE products
+                    SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, last_updated = NOW()
+                    WHERE id = %s
+                ''', (name, code, price, quantity, description, category_id, product_id))
 
         elif action == 'delete':
             cursor.execute('DELETE FROM products WHERE id = %s', (product_id,))
 
-        conn.commit()
+        conn.commit()  # Commit the changes to the database
         cursor.close()
         conn.close()
 
@@ -217,27 +252,63 @@ def inventory():
     return render_template('inventory.html', products=product_list, categories=categories)
 
 
+
 # ADD or Delete Product Page
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
+    UPLOAD_FOLDER = 'static/images'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the directory exists
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     if request.method == 'POST':
         # Retrieve product details from the form
-        product_name = request.form['name']  # Product name for adding
-        product_code = request.form['code']  # Product code for adding
-        product_description = request.form['description']  # Product description for adding
-        product_price = request.form['price']  # Product price for adding
-        product_quantity = request.form['quantity']  # Quantity for adding
-        product_image_url = request.form.get('image_url', 'default_image_url')  # Default image URL if not provided
+        product_name = request.form['name']
+        product_code = request.form['code']
+        product_description = request.form['description']
+        product_price = request.form['price']
+        product_quantity = request.form['quantity']
+        category_id = request.form['category_id']  # Category ID from dropdown menu
+        
+        # Handle the image upload
+        image_file = request.files['image']
+        if image_file and image_file.filename != '':
+            # Secure the filename and save the file
+            secure_name = secure_filename(image_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_name)
+            image_file.save(file_path)
+        else:
+            flash('Image upload failed.', 'danger')
+            return redirect(url_for('add_product'))
+
+        # Save product details, including the image filename, to the database
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM categories WHERE id = %s", (category_id,))
+            category_name = cursor.fetchone()  # Fetch the category name
+            cursor.close()
+            conn.close()
+            
+            if category_name:
+                category_name = category_name[0]  # Extract the category name from the result
+            else:
+                category_name = "Unknown"  # Default in case the category is not found
+
+        except Exception as e:
+            print(f"Error fetching category name: {e}")
+            category_name = "Unknown"  # Set a default if there’s an issue
 
         # Establish a connection to the database
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Insert the product into the database
-        cursor.execute('''
-            INSERT INTO products (name, code, description, price, quantity, image_url)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (product_name, product_code, product_description, product_price, product_quantity, product_image_url))
+        image_url=f'/static/images/{secure_name}'
+        print(image_url)
+        # Insert the product into the database, including category name
+        cursor.execute(''' 
+            INSERT INTO products (name, code, description, price, quantity, image_url, category_id, category_name)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (product_name, product_code, product_description, product_price, product_quantity, image_url, category_id, category_name))
 
         # Commit changes and close the connection
         conn.commit()
@@ -247,8 +318,20 @@ def add_product():
         # Redirect to the same page after adding the product
         return redirect(url_for('add_product'))
 
-    # Render the Add Product page
-    return render_template('add_product.html')
+    # Fetch categories from the database
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name FROM categories")
+        categories = cursor.fetchall()  # Fetch the categories
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error fetching categories: {e}")
+
+    # Render the Add Product page with categories data
+    return render_template('add_product.html', categories=categories)
+
 
 
 @app.route('/ordering', methods=['GET', 'POST'])
@@ -261,7 +344,7 @@ def ordering():
     products = cursor.fetchall()
     
     # Fetch distinct categories
-    cursor.execute('SELECT DISTINCT category_name FROM products')
+    cursor.execute('SELECT name FROM categories')
     categories = cursor.fetchall()
     
     cursor.close()

@@ -84,8 +84,9 @@
             <p><strong>Quantity:</strong> <span id="product_quantity"></span></p>
         </div>
         <div class="partition modify">
-            <form method="POST" action="{{ url_for('inventory') }}">
+            <form method="POST" action="{{ url_for('inventory') }}" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="product_id">
+                <input type="hidden" name="category_id" id="category_id"> <!-- Add category_id here -->
                 <div class="form-group">
                     <label>Name</label>
                     <input type="text" name="name" id="modify_name" class="form-control">
@@ -106,9 +107,14 @@
                     <label>Quantity</label>
                     <input type="number" name="quantity" id="modify_quantity" class="form-control">
                 </div>
+                <div class="form-group">
+                    <label>Product Image</label>
+                    <input type="file" name="image" id="modify_image" accept="image/*" class="form-control">
+                </div>
                 <button type="submit" name="action" value="modify" class="btn btn-primary">Update</button>
                 <button type="submit" name="action" value="delete" class="btn btn-danger mt-2">Delete Product</button>
             </form>
+            
         </div>
     </div>
 </div>
@@ -144,8 +150,7 @@
         // Handle product click to expand
         $('.product-tile').on('click', function () {
             const productId = $(this).data('id');
-            const product = {{ products | tojson }};
-            const selectedProduct = product.find(p => p.id === productId);
+            const selectedProduct = {{ products | tojson }}.find(p => p.id === productId);
 
             // Populate expanded view
             $('#expanded_image').attr('src', selectedProduct.image_url);
@@ -157,6 +162,7 @@
 
             // Populate form fields
             $('#product_id').val(selectedProduct.id);
+            $('#category_id').val(selectedProduct.category_id);  // Set the category_id here
             $('#modify_name').val(selectedProduct.name);
             $('#modify_code').val(selectedProduct.code);
             $('#modify_description').val(selectedProduct.description);
@@ -166,6 +172,7 @@
             // Show expanded view
             $('#expanded_view').show();
         });
+
     });
 
 </script>

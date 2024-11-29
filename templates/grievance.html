@@ -1,134 +1,202 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Inventory Management Grievance Page</title>
-     <link rel="stylesheet" href="styles.css">
-     <style>
-         body {
-             font-family: Arial, sans-serif;
-             background: linear-gradient(to right, #1e3c72, #2a5298); /* Gradient background */
-             margin: 0;
-             padding: 20px;
-             color: #f5f5f5; /* Change text color to light for better contrast */
-         }
- 
-         .container {
-             max-width: 700px;    
-             margin: auto;
-             background: #ffffff; /* White background for the form */
-             padding: 25px;
-             border-radius: 10px;
-             box-shadow: 0 4px 15px rgba(0, 0, 0, 0);
-         }
- 
-         h1 {
-             text-align: center;
-             color: #2a5298;
-             margin-bottom: 15px;
-         }
- 
-         p {
-             text-align: center;
-             color: #555;
-             font-size: 1rem;
-         }
- 
-         label {
-             display: block;
-             margin: 10px 0 5px;
-             color: #333; /* Darker label color for readability */
-             font-weight: bold;
-         }
- 
-         input[type="text"],
-         input[type="email"],
-         select,
-         textarea {
-             width: 100%;
-             padding: 12px;
-             margin-bottom: 15px;
-             border: 1px solid #ccc;
-             border-radius: 6px;
-             font-size: 16px;
-             box-sizing: border-box; /* Prevent overflow issues */
-             transition: border-color 0.3s;
-         }
- 
-         input:focus,
-         textarea:focus,
-         select:focus {
-             border-color: #2a5298;
-             outline: none;
-         }
- 
-         textarea {
-             resize: vertical; /* Allow vertical resizing only */
-         }
- 
-         button {
-             width: 100%;
-             padding: 12px;
-             background-color: #2a5298;
-             color: #ffffff;
-             border: none;
-             border-radius: 6px;
-             cursor: pointer;
-             font-size: 18px; /* Larger font size for buttons */
-             font-weight: bold;
-             transition: background-color 0.3s;
-         }
- 
-         button:hover {
-             background-color: #1e3c72;
-         }
- 
-         .footer {
-             text-align: center;
-             margin-top: 20px;
-         }
- 
-         .footer a {
-             color: #0000FF;
-             text-decoration: none;                                                                                                                                   
-             font-weight: bold;
-         }
- 
-         .footer a:hover {
-            color:#0000FF;
-            text-decoration: underline;
-         }
- 
-         /* Responsive Design */
-         @media (max-width: 768px) {
-             .container {
-                 padding: 20px;
-             }
- 
-             h1 {
-                 font-size: 1.5rem;
-             }
- 
-             p {
-                 font-size: 0.9rem;
-             }
- 
-             button {
-                 font-size: 16px;
-             }
-         }
-     </style>
- </head>
- <body>
-    <div class="container">
-        <div class="header">
-            <h1>Inventory Management Grievance Submission</h1>
-            <p>Please share any concerns or issues you've encountered with the inventory management system. Your feedback is important to help us improve the system and operations.</p>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management Grievance Page</title>
 
-        <!-- Updated action attribute -->
-        <form class="form-container" action="/grievance" method="POST">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #f9f9fa, #fcfcfe);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: scroll; /* Allow scrolling */
+            position: relative;
+        }
+
+        /* Image container styles */
+        .image-container {
+            width: 100%;
+            height: 50vh; /* Set fixed height for image container */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 20px; /* Space between the image and the form */
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            position: absolute;
+            transform: translateX(-100%); /* Start outside the container */
+            transition: transform 1s ease-in-out;
+        }
+
+        .image-container img.enter {
+            transform: translateX(0); /* Enter into the container */
+        }
+
+        .image-container img.exit {
+            transform: translateX(100%); /* Exit the container to the right */
+        }
+
+        /* Form container styles */
+        .form-container {
+            width: 100%;
+            max-width: 800px; /* Set max-width for form */
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; /* Start invisible */
+            transform: translateY(50px); /* Start below the screen */
+            transition: opacity 1s ease, transform 1s ease; /* Smooth transition */
+        }
+
+        .form-container.show {
+            opacity: 1; /* Make visible */
+            transform: translateY(0); /* Bring to center */
+        }
+
+        h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+            font-size: 1.8rem;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        .icon {
+            font-size: 2.2rem;
+            color: #ffc400;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #ffe100;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffc400;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ffee00;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #ffc800;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            color: #ffd500;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .image-container,
+            .form-container {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Image Container -->
+    <div class="image-container">
+        <img src="{{ 'static/images/rp.jpg' }}" alt="Inventory Management" id="image">
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <h1>
+            <i class="fas fa-exclamation-triangle icon"></i>
+            Inventory Management Grievance Submission
+        </h1>
+        <p>Please share any concerns or issues you've encountered with the inventory management system.</p>
+
+        <form action="/grievance" method="POST">
             <label for="name">Your Name:</label>
             <input type="text" id="name" name="name" placeholder="Enter your name" required>
 
@@ -155,5 +223,28 @@
             <p>If you need further assistance, contact the <a href="mailto:support@company.com">support team</a>.</p>
         </div>
     </div>
+
+    <script>
+        window.addEventListener("load", function () {
+            const img = document.getElementById("image");
+            const formContainer = document.querySelector(".form-container");
+
+            // Image enters
+            setTimeout(() => {
+                img.classList.add("enter");
+            }, 100);
+
+            // Image exits after 1 second
+            setTimeout(() => {
+                img.classList.remove("enter");
+                img.classList.add("exit");
+            }, 1100);
+
+            // Show the form after image exit
+            setTimeout(() => {
+                formContainer.classList.add("show");
+            }, 2000); // Increased wait time after the image exits
+        });
+    </script>
 </body>
- </html>
+</html>

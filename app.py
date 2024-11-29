@@ -12,7 +12,7 @@ app.secret_key = 'your_secret_key'
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '2005',
+    'password': '1908',
     'database': 'intern'
 }
 

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* General Styles */
         body {
@@ -16,10 +18,19 @@
         }
 
         h2 {
-            color: #007bff;
+            color: #000000;
             font-weight: bold;
             text-align: center;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.8rem;
+        }
+
+        h2 i {
+            margin-right: 10px;
+            color: #ebd006;
         }
 
         /* Search and Filter Section */
@@ -30,13 +41,13 @@
             border-radius: 30px;
             padding: 10px 20px;
             font-size: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(255, 238, 0, 0.1);
         }
 
         #search:focus {
-            border-color: #007bff;
+            border-color: #fff200;
             outline: none;
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 0 8px rgba(255, 238, 0, 0.948);
         }
 
         .form-group label {
@@ -49,18 +60,26 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        /* Button Styles */
+        .btn-primary,
         #clear_filters {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #ffe100;
+            color: #333;
             border: none;
             border-radius: 30px;
             padding: 10px 20px;
             font-weight: bold;
             transition: all 0.3s ease;
+            display: block;
+            margin: 10px auto;
+            width: 200px;
         }
 
+        .btn-primary:hover,
         #clear_filters:hover {
-            background-color: #0056b3;
+            background-color: #ebd006;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
 
         /* Table Styles */
@@ -73,12 +92,12 @@
         }
 
         thead th {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #ebd006;
+            color: #ffffff;
             text-align: center;
             padding: 10px;
             font-weight: bold;
-            border-bottom: 2px solid #0056b3;
+            border-bottom: 2px solid #ffe600;
         }
 
         tbody td {
@@ -99,26 +118,10 @@
             color: #333;
         }
 
-        /* Buttons and Inputs */
-        button, input {
-            transition: all 0.3s ease;
-        }
-
-        input[type="number"] {
-            padding: 5px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        input[type="number"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            #filter_quantity_min, #filter_quantity_max {
+            #filter_quantity_min,
+            #filter_quantity_max {
                 margin-bottom: 10px;
             }
 
@@ -142,11 +145,12 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container mt-5">
-        <h2>Order Management</h2>
+        <h2><i class="fas fa-box"></i>Order Management</h2>
         <!-- Search Bar -->
-        <input type="text" id="search" class="form-control mb-4" placeholder="Search by Product Name or Code">
+     <input type="text" id="search" class="form-control mb-4" placeholder="Search by Product Name or Code">
 
         <!-- Filter Section -->
         <div class="mb-4">
@@ -171,7 +175,7 @@
                     <input type="number" id="filter_quantity_max" placeholder="Max" class="form-control">
                 </div>
             </div>
-            <button class="btn btn-primary mt-3" id="clear_filters">Clear Filters</button>
+            <button id="clear_filters">Clear Filters</button>
         </div>
 
         <!-- Orders Table -->
@@ -208,6 +212,10 @@
             </tbody>
         </table>
     </div>
+</body>
+
+</html>
+
 
     <script>
         const searchInput = document.getElementById('search');

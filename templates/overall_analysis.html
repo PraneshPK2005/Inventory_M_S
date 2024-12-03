@@ -43,6 +43,9 @@
         <!-- Chart for Sales Trends -->
         <div class="chart-container">
             <h4>Sales Trends Over Time</h4>
+            <button id="dailyBtn">Daily</button>
+            <button id="monthlyBtn">Monthly</button>
+            <button id="yearlyBtn">Yearly</button>
             <canvas id="salesTrendChart"></canvas>
         </div>
 
@@ -55,6 +58,8 @@
         <!-- Chart for Regional Sales -->
         <div class="chart-container">
             <h4>Sales by Geographical Regions</h4>
+            <input type="text" id="countryInput" placeholder="Enter country name" />
+            
             <canvas id="regionChart"></canvas>
         </div>
 
@@ -77,7 +82,8 @@
                         labels: data.categories,
                         datasets: [{
                         data: data.values,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                        backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FFB3D9','#C9DAF8','#F6B93B','#5D6D7E','#E74C3C','#1ABC9C','#8E44AD', '#F39C12', '#2ECC71'  ]
+
                     }]
                 }
             });
@@ -85,24 +91,39 @@
 
 
         // Fetch and Render Sales Trends
-        fetch('/get-sales-trends')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('salesTrendChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.dates,
-                        datasets: [{
-                            label: 'Sales Over Time',
-                            data: data.sales,
-                            borderColor: '#36A2EB',
-                            fill: false,
-                            tension: 0.1
-                        }]
+        const ctx = document.getElementById('salesTrendChart').getContext('2d');
+        let salesTrendChart;
+
+        function fetchSalesTrends(period) {
+            fetch(`/get-sales-trends?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (salesTrendChart) {
+                        salesTrendChart.destroy(); // Destroy the old chart instance
                     }
+                    salesTrendChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dates,
+                            datasets: [{
+                                label: 'Sales Over Time',
+                                data: data.sales,
+                                borderColor: '#36A2EB',
+                                fill: false,
+                                tension: 0.1
+                            }]
+                        }
+                    });
                 });
-            });
+        }
+
+        // Initial fetch for daily data
+        fetchSalesTrends('daily');
+
+        // Event listeners for buttons
+        document.getElementById('dailyBtn').addEventListener('click', () => fetchSalesTrends('daily'));
+        document.getElementById('monthlyBtn').addEventListener('click', () => fetchSalesTrends('monthly'));
+        document.getElementById('yearlyBtn').addEventListener('click', () => fetchSalesTrends('yearly'));
 
         // Fetch and Render Payment Method Distribution
         fetch('/get-payment-methods')
@@ -123,22 +144,44 @@
             });
 
         // Fetch and Render Regional Sales
-        fetch('/get-regional-sales')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('regionChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.regions,
-                        datasets: [{
-                            label: 'Sales by Region',
-                            data: data.sales,
-                            backgroundColor: '#36A2EB'
-                        }]
+        const ctx1 = document.getElementById('regionChart').getContext('2d');
+        let regionChart;
+
+        // Function to fetch regional sales data
+        function fetchRegionalSales(country) {
+            let url = '/get-regional-sales';
+            if (country) {
+                url += `?country=${encodeURIComponent(country)}`; // Append the country to the URL
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (regionChart) {
+                        regionChart.destroy(); // Destroy the old chart instance
                     }
+                    regionChart = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: data.regions,
+                            datasets: [{
+                                label: 'Sales by Region',
+                                data: data.sales,
+                                backgroundColor: '#36A2EB'
+                            }]
+                        }
+                    });
                 });
-            });
+        }
+
+        // Initial fetch for all regional sales
+        fetchRegionalSales();
+
+        // Event listener for the input field to handle changes
+        document.getElementById('countryInput').addEventListener('input', () => {
+            const country = document.getElementById('countryInput').value.trim();
+            fetchRegionalSales(country); // Fetch sales data for the entered country
+        });
 
         // Fetch and Render Customer Demographics (Gender)
         fetch('/get-customer-gender')

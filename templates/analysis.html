@@ -4,36 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis Page</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100vh;  /* Full viewport height */
+            height: 100vh; /* Full viewport height */
             display: flex;
-            flex-direction: row;  /* Arrange containers side by side */
-            background: linear-gradient(to right, #1e3c72, #2a5298);  /* Gradient background */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            background: url('#') no-repeat center center fixed; /* Background image */
+            background-size: cover; /* Make the image cover the entire background */
             color: #f5f5f5;
         }
 
         .container {
             display: flex;
-            width: 100%;
+            gap: 40px; /* Space between the boxes */
+            padding: 40px;
+            border-radius: 1%; /* Optional: Rounded corners for the container */
+            box-shadow: 0 8px 25px rgba(96, 67, 67, 0.3); /* Add shadow to the container */
         }
 
-        /* Each container takes up half the screen width */
         .analysis-container {
-            width: 50%;  /* Each container takes 50% of the screen width */
-            height: 100vh;  /* Full screen height */
+            width: 600px; /* Fixed width */
+            height: 550px; /* Fixed height */
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #ffffff;  /* White background */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 10px; /* Rounded corners */
+            overflow: hidden; /* Clip the image to the container's bounds */
         }
 
         .analysis-container:hover {
@@ -42,53 +44,33 @@
         }
 
         .analysis-container img {
-            max-width: 80%;
-            max-height: 60%;
-            margin-bottom: 20px;
+            width: 100%; /* Stretch the image to the container's width */
+            height: 100%; /* Stretch the image to the container's height */
+            object-fit: cover; /* Ensure the image covers the container without distortion */
         }
 
         .analysis-container h2 {
+            position: absolute; /* Place the text over the image */
             font-size: 1.5rem;
-            color: #333;
+            color: #3e464e;
             font-weight: bold;
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
-
-        .footer a {
-            color: #0000FF;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
+            text-shadow: 0 2px 5px rgba(250, 245, 245, 0.7);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Specific Product Analysis Container -->
-        <div class="analysis-container" onclick="window.location.href='/specific_product_analysis';">
-            <img src="product-analysis-image.jpg" alt="Product Analysis">
+        <div class="analysis-container" onclick="window.location.href='/specific-product-analysis';">
+            <img src="static/images/specific_analysis.jpg" alt="Product Analysis">
             <h2>Specific Product Analysis</h2>
         </div>
 
         <!-- Overall Analysis Container -->
-        <div class="analysis-container" onclick="window.location.href='/overall_analysis';">
-            <img src="overall-analysis-image.jpg" alt="Overall Analysis">
+        <div class="analysis-container" onclick="window.location.href='/overall-analysis';">
+            <img src="static/images/overall_analysis .jpg" alt="Overall Analysis">
             <h2>Overall Analysis</h2>
         </div>
-    </div>
-
-    <div class="footer">
-        <p>If you need further assistance, contact the <a href="mailto:support@company.com">support team</a>.</p>
     </div>
 </body>
 </html>

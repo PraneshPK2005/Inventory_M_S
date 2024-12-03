@@ -8,152 +8,152 @@
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
         /* General styling */
-        /* General styling */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh; /* Ensure the body takes at least the full height */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    position: relative;
-    overflow-y: auto; /* Allow scrolling if content overflows */
-}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            position: relative;
+        }
 
-/* Top bar styling */
-.top-bar {
-    width: 100%;
-    height: 60px;
-    background-color: #ffdd03;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 20;
-}
+        /* Top bar styling */
+        .top-bar {
+            width: 100%;
+            height: 60px;
+            background-color: #ffdd03;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+        }
 
-.top-bar .form-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .top-bar .form-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.top-bar .form-title i {
-    font-size: 2rem;
-}
+        .top-bar .form-title i {
+            font-size: 2rem;
+        }
 
-/* Container styling */
-.add-product-container {
-    width: 90%;
-    max-width: 500px;
-    background-color: #ffffff;
-    border-radius: 15px;
-    padding: 20px;
-    box-sizing: border-box;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    position: relative;
-    margin-top: 100px;
-    margin-bottom: 30px; /* Add margin to ensure space at the bottom */
-}
+        /* Container styling */
+        .add-product-container {
+            width: 70%;
+            max-width: 500px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+            margin-top: 100px;
+            margin-bottom: 100px;
+            height: auto;
+        }
 
-/* Form styling */
-.add-product-form {
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-sizing: border-box;
-}
+        /* Form styling */
+        .add-product-form {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-.form-group {
-    margin-bottom: 15px;
-}
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-.form-label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-}
+        .form-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
 
-.form-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #bfbfbf;
-    border-radius: 5px;
-    font-size: 1rem;
-    box-sizing: border-box;
-}
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bfbfbf;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
 
-/* Button styling */
-.btn {
-    padding: 12px 25px;
-    border: none;
-    color: white;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
+        /* Button styling */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
 
-.btn-success {
-    background-color: #ffdd03;
-}
+        .btn-success {
+            background-color: #ffdd03;
+        }
 
-/* Image container styling */
-.image-container {
-    position: absolute;
-    top: 50%;
-    left: -20%; /* Start fully off-screen on the left */
-    transform: translateY(-50%) scale(0.3); /* Initial small size */
-    height: 150px;
-    width: auto;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-}
+        /* Image container styling */
+        .image-container {
+            position: absolute;
+            top: 50%;
+            left: -20%; /* Start fully off-screen on the left */
+            transform: translateY(-50%) scale(0.3); /* Initial small size */
+            height: 150px;
+            width: auto;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
 
-.image-container img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
 
-/* Keyframe animation */
-@keyframes moveAndResize {
-    0% {
-        left: -120%; /* Fully off-screen to the left */
-        transform: translateY(-50%) scale(0.3); /* Start small */
-    }
-    10% {
-        left: 0%; /* Enter the viewport */
-        transform: translateY(-50%) scale(2); /* Expand to double size */
-    }
-    90% {
-        left: 100%; /* Move across the page */
-        transform: translateY(-50%) scale(2); /* Maintain double size */
-    }
-    100% {
-        left: 120%; /* Exit the viewport */
-        transform: translateY(-50%) scale(0.3); /* Shrink back */
-    }
-}
+        /* Keyframe animation */
+        @keyframes moveAndResize {
+            0% {
+                left: -120%; /* Fully off-screen to the left */
+                transform: translateY(-50%) scale(0.3); /* Start small */
+            }
+            10% {
+                left: 0%; /* Enter the viewport */
+                transform: translateY(-50%) scale(2); /* Expand to double size */
+            }
+            90% {
+                left: 100%; /* Move across the page */
+                transform: translateY(-50%) scale(2); /* Maintain double size */
+            }
+            100% {
+                left: 120%; /* Exit the viewport */
+                transform: translateY(-50%) scale(0.3); /* Shrink back */
+            }
+        }
 
-/* Apply animation when the class is added */
-.image-container.show {
-    animation: moveAndResize 4s ease-in-out forwards;
-}
-
+        /* Apply animation when the class is added */
+        .image-container.show {
+            animation: moveAndResize 4s ease-in-out forwards;
+        }
     </style>
 </head>
 <body>
@@ -167,7 +167,7 @@ body {
 
     <!-- Form container -->
     <div class="add-product-container">
-        <form class="add-product-form" method="POST" id="product-form" enctype="multipart/form-data">
+        <form class="add-product-form" method="POST" id="product-form" enctype="multipart/form-data" >
             <input type="hidden" name="action" value="add"> <!-- Hidden action field -->
             <div class="form-group">
                 <label class="form-label" for="name">Product Name</label>
@@ -217,13 +217,35 @@ body {
 
     <!-- Moving Image -->
     <div class="image-container" id="image-container">
-        <img src="trolly.png" alt="Product Image">
+        <img src="static/images/trolly.png" alt="Product Image">
     </div>
 
     <script>
-        document.getElementById("add-product-btn").addEventListener("click", function() {
-            const imageContainer = document.getElementById("image-container");
-            imageContainer.classList.add("show"); // Add class to trigger animation
+        // Form submission logic
+        document.getElementById("product-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            // Check if all fields are filled before triggering the animation
+            let allFilled = true;
+            const inputs = document.querySelectorAll(".form-input");
+            inputs.forEach(input => {
+                if (!input.value) {
+                    allFilled = false;
+                }
+            });
+
+            if (allFilled) {
+                // Trigger the animation
+                const imageContainer = document.getElementById("image-container");
+                imageContainer.classList.add("show"); // Add class to trigger animation
+                
+                // Proceed with form submission after animation delay
+                setTimeout(() => {
+                    document.getElementById("product-form").submit(); // Submit the form after animation
+                }, 4000); // Match the duration of the animation
+            } else {
+                alert("Please fill in all fields.");
+            }
         });
     </script>
 </body>

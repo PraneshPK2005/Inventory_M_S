@@ -7,116 +7,115 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
         body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 20px;
-    background-color: #f9f9f9;
-    color: #333;
-    }
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
 
-    h1 {
-        font-size: 2.5rem;
-        text-align: center;
-        margin-bottom: 30px;
-        color: #007bff;
-        font-weight: bold;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-    }
+        .navbar {
+            background-color: #007bff;
+        }
 
-    h2 {
-        font-size: 2rem;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        text-align: center;
-        color: #28a745;
-        font-weight: bold;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+            font-weight: bold;
+        }
 
-    .carousel {
-        margin-bottom: 50px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        border-radius: 15px;
-        overflow: hidden;
-    }
+        h1, h2 {
+            text-align: center;
+            margin: 30px 0;
+        }
 
-    .carousel-item img {
-        max-height: 300px;
-        object-fit: cover;
-        border-bottom: 3px solid #007bff;
-        transition: transform 0.3s ease-in-out;
-    }
+        h1 {
+            color: #007bff;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
 
-    .carousel-item img:hover {
-        transform: scale(1.05);
-    }
+        h2 {
+            color: #28a745;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
 
-    .ranking-badge {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: linear-gradient(45deg, #007bff, #28a745);
-        color: #fff;
-        padding: 10px 15px;
-        border-radius: 50%;
-        font-size: 1.5rem;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+        .carousel {
+            margin-bottom: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
 
-    .product-details {
-        text-align: center;
-        margin-top: 15px;
-        background-color: #fff;
-        padding: 15px;
-        border-top: 3px solid #007bff;
-        border-radius: 0 0 15px 15px;
-        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-    }
+        .carousel-item img {
+            max-height: 300px;
+            object-fit: cover;
+            transition: transform 0.3s ease-in-out;
+        }
 
-    .product-name {
-        font-weight: bold;
-        font-size: 1.3rem;
-        color: #007bff;
-        margin-bottom: 5px;
-    }
+        .carousel-item img:hover {
+            transform: scale(1.05);
+        }
 
-    .product-description {
-        color: #666;
-        font-size: 1rem;
-        margin-bottom: 10px;
-    }
+        .ranking-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(45deg, #007bff, #28a745);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-color: #007bff;
-        border-radius: 50%;
-        padding: 10px;
-    }
+        .product-details {
+            text-align: center;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 0 0 15px 15px;
+        }
 
-    .carousel-control-prev-icon:hover,
-    .carousel-control-next-icon:hover {
-        background-color: #0056b3;
-        transform: scale(1.1);
-    }
+        .product-name {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #007bff;
+        }
 
-    p {
-        font-size: 1rem;
-        margin-top: 5px;
-        color: #444;
-    }
+        .product-description {
+            color: #666;
+        }
 
-    button {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+        }
 
-    button:focus {
-        outline: none;
-        box-shadow: 0 0 10px #007bff;
-    }
-
+        .footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <h1 class="text-center">Top Products</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Product Showcase</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#topSoldCarousel">Top Sold</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#minCostCarousel">Minimum Cost</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#categoryCarousel">Category Leaders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#unsoldProductsCarousel">Unsold</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <h1>Top Products</h1>
 
     <h2>Top 5 Most Sold Products</h2>
     <div id="topSoldCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -128,6 +127,7 @@
                 <div class="product-details">
                     <div class="product-name">{{ product.name }}</div>
                     <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Total Sold:</strong> {{ product.total_sold }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -136,7 +136,7 @@
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#topSoldCarousel" data-bs-slide="next">
+        <button class="carousel-control-next" type="button" data-bs-target="#topSoldCarousel " data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
         </button>
@@ -152,6 +152,7 @@
                 <div class="product-details">
                     <div class="product-name">{{ product.name }}</div>
                     <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Price:</strong> ₹{{ product.price }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -191,6 +192,30 @@
         </button>
     </div>
 
+    <h2>Products That Have Not Been Sold</h2>
+    <div id="unsoldProductsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for product in unsold_products %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{ product.image_url }}" class="d-block w-100" alt="{{ product.name }}">
+                <div class="product-details">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Price:</strong> ₹{{ product.price }}</p>
+                    <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#unsoldProductsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#unsoldProductsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

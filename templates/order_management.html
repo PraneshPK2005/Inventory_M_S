@@ -118,6 +118,16 @@
             color: #333;
         }
 
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination .btn {
+            margin-left: 0 100px;
+        }
+
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             #filter_quantity_min,
@@ -201,7 +211,7 @@
                     <td>{{ order[1] }}</td>
                     <td>{{ order[2] }}</td>
                     <td>{{ order[3] }}</td>
-                    <td>${{ order[4] }}</td>
+                    <td>₹{{ order[4] }}</td>
                     <td>{{ order[5] }}</td>
                     <td>{{ order[6] }}</td>
                     <td>{{ order[7] }}</td>
@@ -211,6 +221,16 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('order_management', page=page - 1) }}" class="btn btn-primary">Previous</a>
+            {% endif %}
+            
+            {% if page < total_pages %}
+            <a href="{{ url_for('order_management', page=page + 1) }}" class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>
+        
     </div>
 </body>
 

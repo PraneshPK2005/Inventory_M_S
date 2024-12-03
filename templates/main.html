@@ -10,10 +10,11 @@
     body {
       margin: 0;
       font-family: "Arial", sans-serif;
-      background-color: white; 
+      background-color: white;
       height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
     .header {
@@ -47,40 +48,77 @@
       font-weight: bold;
     }
 
-    .logout-button {
-      background-color: white;
-      color: black;
-      border: #ffdd03;
-      border-radius: 5px;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.7s ease;
+    nav a {
+      margin-left: 1rem;
+    }
+    .header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
     }
 
-    .logout-button:hover {
-      background-color: rgb(27, 171, 187);
-    }
+/* Button styles: no box, just text */
+.header-buttons button {
+  background: none;
+  border: none;
+  color: rgb(0, 0, 0);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.header-buttons button:hover {
+  color: rgb(4, 4, 4); /* Highlight color on hover */
+}
+
+/* Logout icon styles */
+.header-buttons .logout-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  margin-left: 1rem; /* Add spacing from the last button */
+  transition: transform 0.3s ease;
+}
+
+.header-buttons .logout-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Remaining styles */
+.action-buttons {
+  position: fixed;
+  top: 124px;
+  right: 100px;
+  display: flex;
+  gap: 2rem;
+}
+
+    
 
     .sidebar {
       position: fixed;
-      top: 13%; /* Below header */
-      left: 0;
-      height: calc(100% - 64px);
-      width: 65px; /* Initial collapsed width */
-      background: white;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 1rem 0;
-      z-index: 1;
-      border-right: 3px solid #132a39;
-      box-sizing: border-box;
-      transition: width 0.3s ease-in-out;
+  top: 64px;
+  left: 0;
+  height: calc(100% - 64px);
+  width: 65px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem 0;
+  z-index: 1;
+  border-right: 3px solid #132a39;
+  box-sizing: border-box;
+  transition: width 0.3s ease-in-out;
+  overflow-y: auto;
+  overflow-x: hidden;
     }
 
-    .sidebar:hover {
-      width: 200px; /* Expanded width on hover */
+    .sidebar.expanded {
+      width: 200px;
     }
 
     .sidebar ul {
@@ -89,19 +127,19 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1rem;/* listed of gap cntent sidebar*/
       align-items: flex-start;
       width: 100%;
     }
 
     .sidebar ul li a {
-      text-decoration: dotted;
-      color: black;
+      text-decoration:dotted;
+      color:black;
       display: flex;
       align-items: center;
       gap: 20px;
       padding: 0.7rem 10px;
-      font-size: 1.5rem;
+      font-size: 1.5rem; /* Increased font size */
       transition: color 0.3s ease-in-out;
     }
 
@@ -110,34 +148,277 @@
       transition: opacity 0.3s ease-in-out;
     }
 
-    .sidebar:hover ul li a .label {
-      opacity: 1; /* Show label on hover */
+    .sidebar.expanded ul li a .label {
+      opacity: 1;
     }
 
     .sidebar ul li a:hover {
       color: #ffdd03;
     }
 
+    .sidebar-toggle {
+      gap: 10px;
+      padding: left;
+      align-items: center;
+      background: none;
+      border: none;
+      color: black ;
+      font-size: 2rem;
+      cursor: pointer;
+      margin-top: 2rem;
+      padding: 0.5rem;
+      transition: color 0.3s;
+    }
+
+    .sidebar-toggle:hover {
+      color: #ffdd03;
+    }
+
     .main-container {
       display: flex;
-      flex-direction: column;
-      height: 100%;
-      margin-top: 64px;
-    }
-
-    .content {
       flex: 1;
-      margin-left: 65px;
-      padding: 2rem;
-      background-color: white;
+      margin-top: 64px; /* To account for the header */
+      width: 100%;
       transition: margin-left 0.3s ease-in-out;
-      overflow-y: auto;
-    }
+      margin-left: 65px; /* Initial margin for sidebar */
+}
 
-    .sidebar:hover ~ .content {
-      margin-left: 200px; /* Adjust content margin when sidebar expands */
+/* The content area */
+.content {
+  flex: 1;
+  margin-left: 65px;
+  padding: 2rem;
+  background-color: white;
+  transition: margin-left 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+    .sidebar.expanded ~ .content {
+      margin-left: 200px;
     }
-  </style>
+    .overview-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.overview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 300px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.overview.reverse {
+  flex-direction: row-reverse;
+}
+
+.overview img {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.text-content h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.text-content p {
+  font-size: 1rem;
+  color: #666;
+}
+
+.overview:hover {
+  transform: scale(1.02);
+}
+
+.content-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3rem;
+  width: 90%;
+  max-width: 1200px;
+}
+
+.text-content {
+  max-width: 600px;
+}
+
+.text-content h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.text-content p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.text-content .btn {
+  padding: 1rem 2rem;
+  background: #5f2eea;
+  color: #fff;
+  font-size: 1rem;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+  box-shadow: 0 4px 10px rgba(95, 46, 234, 0.3);
+}
+
+.text-content .btn:hover {
+  background: #4b22d9;
+}
+
+.image-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-content img {
+  max-width: 100%;
+
+  height: auto;
+  margin-left: 400px;
+  
+}
+/* Footer Styling */
+
+/* Footer Styling */
+.footer {                                               
+  background-color: #000000d7; 
+  padding: 20px 40px; /* Reduced top padding from 40px to 20px */
+  border-top: 2px solid #ddd;
+  box-sizing: border-box;
+  color: white;
+  height: auto;
+  width: calc(100% - 65px); /* Default width to account for the sidebar */
+  margin-top: auto;
+  margin-left: 65px; /* Align with the collapsed sidebar */
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; /* Add smooth transition */
+  margin-bottom: 60px;
+}
+
+/* Adjust Footer When Sidebar Expands */
+.sidebar.expanded ~ .footer {
+  margin-left: 200px; /* Align with the expanded sidebar */
+  width: calc(100% - 200px); /* Adjust width when sidebar expands */
+}
+
+/* Footer Container */
+.footer-container {
+  display: flex;
+  justify-content: space-between; /* Spread items evenly along the horizontal axis */
+  align-items: flex-start; /* Align items to the top */
+  flex-wrap: nowrap; /* Ensure items stay in one row */
+  gap: 20px; /* Add consistent spacing between sections */
+  padding: 1px 0; /* Reduced padding inside the container */
+}
+
+/* Footer Section */
+.footer-section {
+  flex: 1;
+  min-width: 200px; /* Ensure sections don't get too small */
+  max-width: 300px; /* Limit the maximum width of each section */
+  display: flex;
+  flex-direction: column; /* Stack the title and content vertically within each section */
+  text-align: left; /* Align text to the left for better readability */
+}
+
+.footer-section h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #ffdd03;
+}
+
+.footer-section p {
+  line-height: 1.6;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.footer-section ul li a {
+  text-decoration: none;
+  color: white;
+}
+
+.footer-section ul li a:hover {
+  color: #ffdd03;
+}
+
+/* Social Media Icons Styling */
+.footer-section.social-media ul {
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section.social-media ul li {
+  display: inline-block;
+}
+
+.footer-section.social-media ul li a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #333;
+  color: #fff;
+  font-size: 18px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.footer-section.social-media ul li a:hover {
+  background-color: #ffdd03;
+  transform: scale(1.1);
+}
+
+/* Footer Bottom Section */
+.footer-bottom {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: white;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+
+.footer-bottom a {
+  color: #ffdd03;
+  text-decoration: none;
+}
+
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+
+    
+</style>
 </head>
 <body>
   <header class="header">
@@ -145,30 +426,162 @@
       <i class="fas fa-cube"></i>
       <h1 class="title">Inventory Management</h1>
     </div>
-    <button class="logout-button"><a href="/login"> Logout</a></button>
+    <div class="header-buttons">
+        <button>Home</button>
+        <button>About us</button>
+        <button>Contact info</button>
+        <a href="/">
+          <img src="static/images/logout.png" alt="Logout" class="logout-icon">
+        </a>
+      </div>
   </header>
 
   <div class="main-container">
     <aside class="sidebar">
+      <button class="sidebar-toggle" aria-label="Toggle Sidebar" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
       <ul class="sidebar-options">
         <li><a href="/dashboard"><i class="bx bx-home-alt icon"></i><span class="label">Dashboard</span></a></li>
         <li><a href="/inventory"><i class="bx bx-box icon"></i><span class="label">Inventory</span></a></li>
-        <li><a href="/add_product"><i class="bx bx-plus-circle icon"></i><span class="label">Add Product</span></a></li>
-        <li><a href="analysis"><i class="bx bx-line-chart icon"></i><span class="label">Analysis</span></a></li>
-        <li><a href="/order_management"><i class="bx bx-cart icon"></i><span class="label">Order Management</span></a></li>
-        <li><a href="/ordering"><i class="bx bx-error icon"></i><span class="label">Order</span></a></li>
+        <li><a href="/add_product"><i class="bx bx-plus-circle icon"></i><span class="label">Add </span></a></li>
+        <li><a href="/analysis"><i class="bx bx-line-chart icon"></i><span class="label">Analysis</span></a></li>
+        <li><a href="/ordering"><i class="bx bx-cart-add icon"></i><span class="label">Order</span></a></li>
+        <li><a href="/order_management"><i class="bx bx-cart icon"></i><span class="label">Order Managemet</span></a></li>
         <li><a href="/report"><i class="bx bx-file icon"></i><span class="label">Report</span></a></li>
         <li><a href="/grievance"><i class="bx bx-error icon"></i><span class="label">Grievance</span></a></li>
       </ul>
     </aside>
     <main class="content" id="main-content">
-      <div class="box">
-        <center>
-          <h2>Welcome to Inventory Management</h2>
-          <p>Select an option from the sidebar to view its content.</p>
-        </center>
-      </div>
+        <div class="content-main">
+            <div class="text-content">
+              <h1>Inventory Management</h1>
+              <p>Inventory management is the process of tracking, ordering, storing and selling stock. It covers the entire process, from how you source your products to how you get finished products off of your shelves. The main purpose of inventory management is to have the right amount of stock in the right locations at the right time, all while controlling costs so you can make a profit.
+
+              </p>
+              <a href="https://en.wikipedia.org/wiki/Inventory_management_software" class="btn">Learn More</a>
+            </div>
+            <div class="image-content">
+              <img src="static/images/main_img.png" alt="Inventory Management Illustration">
+            </div>
+          </div>
+    
+          <!-- Overview Sections -->
+          <div class="overview-sections">
+            <div class="overview">
+              <img src="static/images/main_inventory.jpg" alt="Overview Image">
+              <div class="text-content">
+                <h2>Inventory Overview</h2>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloribus, dolorem! Ducimus laborum corrupti non corporis dicta alias dolores, recusandae quod tenetur porro autem dolorem impedit quia dolore ea, culpa eaque!This section provides an overview of your inventory including item counts and status.</p>
+              </div>
+            </div>
+            <div class="overview reverse">
+              <img src="static\images\main_order.jpg" alt="Overview Image">
+              <div class="text-content">
+                <h2>Order Management</h2>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. A voluptates eveniet molestiae quibusdam, facere corporis eum, enim esse commodi porro consequuntur at placeat. Quasi consectetur aspernatur molestias non voluptatem esse minus ex perferendis perspiciatis similique, doloremque nam cumque eveniet, temporibus odio accusamus, corporis recusandae quia amet? Inventore earum accusamus cumque.Manage and track your orders from initiation to fulfillment.</p>
+              </div>
+            </div>
+            <div class="overview">
+              <img src="static/images/main_stock.jpg" alt="Overview Image">
+              <div class="text-content">
+                <h2>Stock Alerts</h2>
+                <p>Set alerts for low stock levels and receive notifications for replenishment.</p>
+              </div>
+            </div>
+            <div class="overview reverse">
+              <img src="static/images/main_vendor.jpg" alt="Overview Image">
+              <div class="text-content">
+                <h2>Vendor Management</h2>
+                <p>Track and manage your vendors to ensure timely product delivery.</p>
+              </div>
+            </div>
+            <div class="overview">
+              <img src="static/images/main_report.jpg" alt="Overview Image">
+              <div class="text-content">
+                <h2>Reporting</h2>
+                <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptates magni quibusdam amet laborum similique ea, sit ut optio autem molestias delectus obcaecati vel dolore harum molestiae ipsum quasi illo blanditiis!Generate detailed reports on inventory status, sales, and stock trends.</p>
+              </div>
+            </div>
+          </div>
     </main>
   </div>
+          <!- Footer Section ->
+          <footer class="footer">
+              <div class="footer-container">
+                  <!- Contact Info ->
+                  <div class="footer-section">
+                      <h3>Contact Info</h3>
+                      <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quisquam officiis obcaecati optio. Praesentium magni voluptates quaerat, tempora iste blanditiis. ipsum dolor sit amet. <br>
+                        Chennai, Tamil Nadu 600053</p>
+                      <p>Phone: 91 - 1234567890</p>
+                      <p>Email: <a href="#">info@yourwebsite.com</a></p>
+                  </div>
+      
+                  <!- Property Types ->
+                  <div class="footer-section">
+                      <h3>About us</h3>
+                      <p> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Reiciendis aspernatur provident laudantium qui, dolor culpa labore pariatur odio sit ratione..</p>
+                  </div>
+      
+                  <!-- Social Media Section -->
+        <div class="footer-section social-media">
+           <h3>Follow Us</h3>
+           <ul class="social-icons">
+                <li><a href="https://www.facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+                <li><a href="https://www.twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="https://www.instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+                <li><a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a></li>
+                <li><a href="https://www.youtube.com" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a></li>
+                </ul>
+            </div>
+            
+      
+                  <!- Recent Posts ->
+                  <div class="footer-section">
+                      <h3>Recent Posts</h3>
+                      <ul>
+                          <li><a href="#">Standard Blog Post With Featured Image</a></li>
+                          <li><a href="#">Example Post With Gallery Post Format</a></li>
+                          <li><a href="#">Example Post With Image Post Format</a></li>
+                          <li><a href="#">Lorem Ipsum Dolor Sit Amet</a></li>
+                          <li><a href="#">Example Video Blog Post</a></li>
+                      </ul>
+                  </div>
+              </div>
+      
+              <!---- Footer Bottom Section ->
+              <div class="footer-bottom">
+                  <p>© 2023. All rights reserved. <a href="#">A Theme by Inspiry Themes</a></p>
+              </div>
+          </footer>-->
+
+      
+
+  <script>
+    
+document.querySelector('.sidebar-toggle').addEventListener('click', function () {
+  const sidebar = document.querySelector('.sidebar');
+  const footer = document.querySelector('.footer');
+
+  // Toggle the sidebar class
+  sidebar.classList.toggle('expanded');
+
+  // Dynamically adjust the footer based on the sidebar state
+  if (sidebar.classList.contains('expanded')) {
+    footer.style.marginLeft = '200px';
+    footer.style.width = 'calc(100% - 200px)';
+  } else {
+    footer.style.marginLeft = '65px';
+    footer.style.width = 'calc(100% - 65px)';
+  }
+});
+
+
+
+    
+
+
+  </script>
 </body>
 </html>

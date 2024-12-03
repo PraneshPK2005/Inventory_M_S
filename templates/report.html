@@ -110,13 +110,15 @@
         <table class="fade-in">
             <tr>
                 <th>Name</th>
-                <th>Price</th>
+                <th>Previous Price</th>
+                <th>Current Price</th>
                 <th>Last Updated</th>
             </tr>
             {% for change in price_changes %}
             <tr>
                 <td>{{ change.name }}</td>
-                <td>{{ change.price }}</td>
+                <td>{{ change.previous_price }}</td>
+                <td>{{ change.current_price }}</td>
                 <td>{{ change.last_updated }}</td>
             </tr>
             {% endfor %}

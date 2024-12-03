@@ -148,6 +148,8 @@ def inventory():
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Define your upload folder
+    items_per_page = 55
+    page = request.args.get('page', 1, type=int)
     
     if request.method == 'POST':
         action = request.form['action']
@@ -155,6 +157,8 @@ def inventory():
 
         conn = get_db_connection()
         cursor = conn.cursor()
+        # Pagination settings
+        
 
         # Initialize image_url variable (default to None)
         image_url = None
@@ -163,6 +167,21 @@ def inventory():
         if 'image' in request.files:
             image = request.files['image']
             if image and image.filename != '':
+                # Fetch the current image_url from the database
+                cursor.execute("SELECT image_url FROM products WHERE id = %s", (product_id,))
+                current_image_url = cursor.fetchone()[0]  # Fetch the existing image_url
+                
+                # If an old image exists, delete it
+                if current_image_url:
+                    old_image_path = current_image_url.lstrip('/')  # Remove leading '/' for the correct path
+                    if os.path.exists(old_image_path):
+                        try:
+                            os.remove(old_image_path)
+                            print(f"Deleted old image: {old_image_path}")
+                        except Exception as e:
+                            print(f"Error deleting old image: {e}")
+
+                # Save the new image
                 filename = secure_filename(image.filename)
                 image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 print(f"Saving image to: {image_path}")  # Debug: Check the path where the image is saved
@@ -177,7 +196,10 @@ def inventory():
             price = request.form['price']
             quantity = request.form['quantity']
             description = request.form['description']
-            category_id = request.form['category_id']  # Get category_id from the form
+            category_id = request.form['category_id']
+            
+            cursor.execute("SELECT price FROM products WHERE id = %s", (product_id,))
+            current_price = cursor.fetchone()[0]  
 
             if image_url:  # Update image_url only if a new image was uploaded
                 cursor.execute('''
@@ -191,6 +213,13 @@ def inventory():
                     SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, last_updated = NOW()
                     WHERE id = %s
                 ''', (name, code, price, quantity, description, category_id, product_id))
+
+            if float(price) != current_price:
+                cursor.execute('''
+                    INSERT INTO price_history (product_code, price, time)
+                    VALUES (%s, %s, CURDATE())
+                ''', (code, price))
+
 
         elif action == 'delete':
             cursor.execute('DELETE FROM products WHERE id = %s', (product_id,))
@@ -230,13 +259,21 @@ def inventory():
         else:
             query += " WHERE LOWER(p.name) LIKE %s OR LOWER(p.code) LIKE %s"
         params.extend([f"%{search_query}%", f"%{search_query}%"])
+    
+    # Add pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([items_per_page, (page - 1) * items_per_page])
 
     cursor.execute(query, params)
-
     products = cursor.fetchall()
+
+    # Fetch the total number of products for pagination
+    cursor.execute("SELECT COUNT(*) FROM products")
+    total_products = cursor.fetchone()[0]
+    total_pages = (total_products + items_per_page - 1) // items_per_page  # Calculate total pages
+
     cursor.close()
     conn.close()
-
     product_list = [{
         'id': product[0],
         'name': product[1],
@@ -249,87 +286,88 @@ def inventory():
         'category_id': product[8]
     } for product in products]
 
-    return render_template('inventory.html', products=product_list, categories=categories)
+    return render_template('inventory.html', products=product_list, categories=categories, page=page, total_pages=total_pages)
 
 
 
+import time
 # ADD or Delete Product Page
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
+    app.logger.debug(f"Request method: {request.method}")
     UPLOAD_FOLDER = 'static/images'
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Ensure the directory exists
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure folder exists
+
     if request.method == 'POST':
-        # Retrieve product details from the form
+        # Retrieve form details
         product_name = request.form['name']
         product_code = request.form['code']
         product_description = request.form['description']
         product_price = request.form['price']
         product_quantity = request.form['quantity']
-        category_id = request.form['category_id']  # Category ID from dropdown menu
+        category_id = request.form['category_id']
         
-        # Handle the image upload
+        # Handle image upload
         image_file = request.files['image']
         if image_file and image_file.filename != '':
-            # Secure the filename and save the file
             secure_name = secure_filename(image_file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_name)
             image_file.save(file_path)
         else:
             flash('Image upload failed.', 'danger')
             return redirect(url_for('add_product'))
-
-        # Save product details, including the image filename, to the database
+        
+        # Save product details to database
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
+
+            # Fetch category name
             cursor.execute("SELECT name FROM categories WHERE id = %s", (category_id,))
-            category_name = cursor.fetchone()  # Fetch the category name
-            cursor.close()
-            conn.close()
-            
-            if category_name:
-                category_name = category_name[0]  # Extract the category name from the result
-            else:
-                category_name = "Unknown"  # Default in case the category is not found
+            category_name = cursor.fetchone()
+            category_name = category_name[0] if category_name else "Unknown"
+
+            # Insert product details
+            cursor.execute('''
+                INSERT INTO products (name, code, description, price, quantity, image_url, category_id, category_name)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ''', (product_name, product_code, product_description, product_price, product_quantity, 
+                  f'/static/images/{secure_name}', category_id, category_name))
+
+            conn.commit()  # Commit transaction
+
+            cursor.execute('''
+                INSERT INTO price_history (product_code, price, time)
+                VALUES (%s, %s, CURDATE())
+            ''', (product_code, product_price))
+
+            conn.commit()
 
         except Exception as e:
-            print(f"Error fetching category name: {e}")
-            category_name = "Unknown"  # Set a default if there’s an issue
-
-        # Establish a connection to the database
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        image_url=f'/static/images/{secure_name}'
-        print(image_url)
-        # Insert the product into the database, including category name
-        cursor.execute(''' 
-            INSERT INTO products (name, code, description, price, quantity, image_url, category_id, category_name)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        ''', (product_name, product_code, product_description, product_price, product_quantity, image_url, category_id, category_name))
-
-        # Commit changes and close the connection
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        # Redirect to the same page after adding the product
+            app.logger.error(f"Error: {e}")
+            conn.rollback()  # Rollback on error
+            flash('Error while adding product.', 'danger')
+        finally:
+            cursor.close()
+            conn.close()
+        time.sleep(3)
         return redirect(url_for('add_product'))
 
-    # Fetch categories from the database
+    # Fetch categories for dropdown
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id, name FROM categories")
-        categories = cursor.fetchall()  # Fetch the categories
+        categories = cursor.fetchall()
+    except Exception as e:
+        app.logger.error(f"Error fetching categories: {e}")
+        categories = []
+    finally:
         cursor.close()
         conn.close()
-    except Exception as e:
-        print(f"Error fetching categories: {e}")
 
-    # Render the Add Product page with categories data
     return render_template('add_product.html', categories=categories)
 
 
@@ -338,19 +376,58 @@ def add_product():
 def ordering():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Fetch all products
-    cursor.execute('SELECT id, name, code, price, description, category_name FROM products')
+
+    # Pagination settings
+    items_per_page = 50
+    page = request.args.get('page', 1, type=int)
+
+    # Fetch all products with pagination
+    cursor.execute('SELECT COUNT(*) FROM products')
+    total_products = cursor.fetchone()[0]
+    total_pages = (total_products + items_per_page - 1) // items_per_page  # Calculate total pages
+
+    offset = (page - 1) * items_per_page
+
+    # Fetch products with their primary image and additional images
+    cursor.execute('''
+        SELECT p.id, p.name, p.code, p.price, p.description, p.category_name, p.image_url, pi.image_url AS additional_image
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LIMIT %s OFFSET %s
+    ''', (items_per_page, offset))
+
     products = cursor.fetchall()
-    
+
     # Fetch distinct categories
     cursor.execute('SELECT name FROM categories')
     categories = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
 
-    return render_template('ordering.html', products=products, categories=categories)
+    # Organize products by ID to group images
+    product_dict = {}
+    for product in products:
+        product_id = product[0]
+        if product_id not in product_dict:
+            product_dict[product_id] = {
+                'id': product[0],
+                'name': product[1],
+                'code': product[2],
+                'price': product[3],
+                'description': product[4],
+                'category_name': product[5],
+                'primary_image': product[6],
+                'additional_images': []
+            }
+        # Append additional image URL if it exists
+        if product[7]:
+            product_dict[product_id]['additional_images'].append(product[7])
+
+    # Convert back to a list
+    products = list(product_dict.values())
+
+    return render_template('ordering.html', products=products, categories=categories, page=page, total_pages=total_pages)
 
 
 
@@ -483,23 +560,36 @@ def confirm_order():
 
 @app.route('/order_management', methods=['GET'])
 def order_management():
+    page = int(request.args.get('page', 1))  # Get the page number from query params, default to 1
+    per_page = 10  # Number of orders per page
+    offset = (page - 1) * per_page  # Calculate the offset
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Fetch all orders
+    # Fetch the total number of orders for pagination info
+    cursor.execute('SELECT COUNT(*) FROM orders')
+    total_orders = cursor.fetchone()[0]
+
+    # Fetch orders for the current page
     cursor.execute('''
         SELECT 
             orders.id, product_name, product_code, quantity, cost, customer_name, 
             customer_address, payment_mode, country, order_date 
         FROM orders 
         ORDER BY order_date DESC
-    ''')
+        LIMIT %s OFFSET %s
+    ''', (per_page, offset))
     orders = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('order_management.html', orders=orders)
+    # Calculate total pages
+    total_pages = (total_orders + per_page - 1) // per_page
+
+    return render_template('order_management.html', orders=orders, page=page, total_pages=total_pages)
+
 
 @app.route('/report')
 def report():
@@ -512,11 +602,31 @@ def report():
         # Existing Queries
         print("Querying product price changes...")
         cursor.execute('''
-            SELECT name, price, last_updated
-            FROM products
-            WHERE last_updated IS NOT NULL
-            ORDER BY last_updated DESC;
-        ''')
+            SELECT 
+                ph1.name,
+                ph1.price AS current_price,
+                ph2.price AS previous_price,
+                ph1.time AS last_updated
+            FROM 
+                price_history ph1
+            JOIN 
+                price_history ph2 ON ph1.product_code = ph2.product_code 
+                                AND ph1.time > ph2.time
+            WHERE 
+                ph1.time = (
+                    SELECT MAX(time) 
+                    FROM price_history 
+                    WHERE product_code = ph1.product_code
+                )
+                AND ph2.time = (
+                    SELECT MAX(time) 
+                    FROM price_history 
+                    WHERE product_code = ph1.product_code 
+                    AND time < ph1.time
+                )
+            ORDER BY 
+                ph1.product_code;
+            ''')
         price_changes = cursor.fetchall()
 
         print("Querying products at minimum quantity...")
@@ -719,19 +829,37 @@ def get_stock_distribution():
 
 @app.route('/get-sales-trends')
 def get_sales_trends():
+    period = request.args.get('period', 'daily')  # Default to 'daily'
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = """
-    SELECT DATE(order_date) AS date, SUM(total_price)
-    FROM sales
-    GROUP BY DATE(order_date)
-    ORDER BY DATE(order_date) ASC
-    """
+
+    if period == 'monthly':
+        query = """
+        SELECT DATE_FORMAT(order_date, '%Y-%m') AS date, SUM(total_price)
+        FROM sales
+        GROUP BY DATE_FORMAT(order_date, '%Y-%m')
+        ORDER BY DATE_FORMAT(order_date, '%Y-%m') ASC
+        """
+    elif period == 'yearly':
+        query = """
+        SELECT YEAR(order_date) AS date, SUM(total_price)
+        FROM sales
+        GROUP BY YEAR(order_date)
+        ORDER BY YEAR(order_date) ASC
+        """
+    else:  # Default to daily
+        query = """
+        SELECT DATE(order_date) AS date, SUM(total_price)
+        FROM sales
+        GROUP BY DATE(order_date)
+        ORDER BY DATE(order_date) ASC
+        """
+
     cursor.execute(query)
     data = cursor.fetchall()
     cursor.close()
 
-    dates = [row[0].strftime('%Y-%m-%d') for row in data]
+    dates = [row[0].strftime('%Y-%m-%d') if period == 'daily' else row[0] for row in data]
     sales = [row[1] for row in data]
 
     return jsonify({'dates': dates, 'sales': sales})
@@ -759,14 +887,26 @@ def get_payment_methods():
 
 @app.route('/get-regional-sales')
 def get_regional_sales():
+    country = request.args.get('country')  # Get the country from query parameters
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = """
-    SELECT country, SUM(total_price)
-    FROM sales
-    GROUP BY country
-    """
-    cursor.execute(query)
+
+    if country:
+        query = """
+        SELECT country, SUM(total_price)
+        FROM sales
+        WHERE country LIKE %s
+        GROUP BY country
+        """
+        cursor.execute(query, (f'%{country}%',))  # Use LIKE for partial matches
+    else:
+        query = """
+        SELECT country, SUM(total_price)
+        FROM sales
+        GROUP BY country
+        """
+        cursor.execute(query)
+
     data = cursor.fetchall()
     cursor.close()
 
@@ -821,21 +961,41 @@ def specific_product_analysis():
 
 @app.route('/get-product-price-time/<code>', methods=['GET'])
 def get_price_time_data(code):
+    granularity = request.args.get('granularity', 'monthly')  # Default to daily if not specified
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
     try:
-        cursor.execute("""
-        SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, AVG(cost) AS avg_price
-        FROM orders
-        WHERE product_code = %s
-        GROUP BY month
-        ORDER BY month
-        """, (code,))
+        if granularity == 'daily':
+            cursor.execute("""
+            SELECT DATE_FORMAT(time, '%Y-%m-%d') AS period, price
+            FROM price_history
+            WHERE product_code = %s
+            ORDER BY time
+            """, (code,))
+        
+        elif granularity == 'yearly':
+            cursor.execute("""
+            SELECT DATE_FORMAT(time, '%Y') AS period, price
+            FROM price_history
+            WHERE product_code = %s
+            ORDER BY time
+            """, (code,))
+        
+        else:  # Default to monthly
+            cursor.execute("""
+            SELECT DATE_FORMAT(time, '%Y-%m') AS period, price
+            FROM price_history
+            WHERE product_code = %s
+            ORDER BY time
+            """, (code,))
         
         rows = cursor.fetchall()
+        
+        # Prepare the data for JSON response
         price_time = {
-            "labels": [row['month'] for row in rows],
-            "values": [float(row['avg_price']) for row in rows]
+            "labels": [row['period'] for row in rows],
+            "values": [float(row['price']) for row in rows]
         }
         return jsonify(price_time)
 
@@ -848,23 +1008,44 @@ def get_price_time_data(code):
 
 
 
-
 @app.route('/get-product-units-sold/<code>', methods=['GET'])
 def get_units_sold_data(code):
+    interval = request.args.get('interval', 'monthly')  # Default to monthly if not specified
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
     try:
-        cursor.execute("""
-        SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(quantity) AS units_sold
-        FROM orders
-        WHERE product_code = %s
-        GROUP BY month
-        ORDER BY month
-        """, (code,))
+        if interval == 'daily':
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y-%m-%d') AS day, SUM(quantity) AS units_sold
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY day
+            ORDER BY day
+            """, (code,))
+        elif interval == 'yearly':
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y') AS year, SUM(quantity) AS units_sold
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY year
+            ORDER BY year
+            """, (code,))
+        else:  # Default to monthly
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(quantity) AS units_sold
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY month
+            ORDER BY month
+            """, (code,))
         
         rows = cursor.fetchall()
+        if not rows:
+            return jsonify({"labels": [], "values": []})  # Return empty data if no records found
+
         units_sold = {
-            "labels": [row['month'] for row in rows],
+            "labels": [row['day'] if interval == 'daily' else row['month'] if interval == 'monthly' else row['year'] for row in rows],
             "values": [int(row['units_sold']) if row['units_sold'] else 0 for row in rows]
         }
         return jsonify(units_sold)
@@ -876,23 +1057,41 @@ def get_units_sold_data(code):
         cursor.close()
         conn.close()
 
-
 @app.route('/get-product-revenue/<code>', methods=['GET'])
 def get_revenue_data(code):
+    interval = request.args.get('interval', 'monthly')  # Default to monthly if not specified
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
     try:
-        cursor.execute("""
-        SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(total_price) AS revenue
-        FROM orders
-        WHERE product_code = %s
-        GROUP BY month
-        ORDER BY month
-        """, (code,))
+        if interval == 'daily':
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y-%m-%d') AS day, SUM(total_price) AS revenue
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY day
+            ORDER BY day
+            """, (code,))
+        elif interval == 'yearly':
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y') AS year, SUM(total_price) AS revenue
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY year
+            ORDER BY year
+            """, (code,))
+        else:  # Default to monthly
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(total_price) AS revenue
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY month
+            ORDER BY month
+            """, (code,))
         
         rows = cursor.fetchall()
         revenue = {
-            "labels": [row['month'] for row in rows],
+            "labels": [row['day'] if interval == 'daily' else row['month'] if interval == 'monthly' else row['year'] for row in rows],
             "values": [float(row['revenue']) if row['revenue'] else 0.0 for row in rows]
         }
         return jsonify(revenue)
@@ -911,7 +1110,7 @@ def get_country_distribution(code):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
-        SELECT country, COUNT(*) AS customer_count
+        SELECT country, COUNT(*) AS count
         FROM orders
         WHERE product_code = %s
         GROUP BY country
@@ -920,7 +1119,7 @@ def get_country_distribution(code):
         rows = cursor.fetchall()
         country_distribution = {
             "labels": [row['country'] for row in rows],
-            "values": [row['customer_count'] for row in rows]
+            "values": [row['count'] for row in rows]
         }
         return jsonify(country_distribution)
 
@@ -934,22 +1133,53 @@ def get_country_distribution(code):
 
 @app.route('/get-product-time-of-purchase/<code>', methods=['GET'])
 def get_time_purchase_data(code):
+    interval = request.args.get('interval', 'monthly')  # Default to monthly if not specified
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
     try:
-        cursor.execute("""
-        SELECT HOUR(order_date) AS hour, COUNT(*) AS purchases
-        FROM orders
-        WHERE product_code = %s
-        GROUP BY hour
- ORDER BY hour
-        """, (code,))
-        
-        rows = cursor.fetchall()
-        time_purchase = {
-            "labels": [f"{row['hour']}:00" for row in rows],
-            "values": [row['purchases'] for row in rows]
-        }
+        if interval == 'daily':
+            cursor.execute("""
+            SELECT DATE(order_date) AS date, COUNT(*) AS purchases
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY date
+            ORDER BY date
+            """, (code,))
+            rows = cursor.fetchall()
+            time_purchase = {
+                "labels": [row['date'] for row in rows],
+                "values": [row['purchases'] for row in rows]
+            }
+
+        elif interval == 'yearly':
+            cursor.execute("""
+            SELECT YEAR(order_date) AS year, COUNT(*) AS purchases
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY year
+            ORDER BY year
+            """, (code,))
+            rows = cursor.fetchall()
+            time_purchase = {
+                "labels": [row['year'] for row in rows],
+                "values": [row['purchases'] for row in rows]
+            }
+
+        else:  # Default to monthly
+            cursor.execute("""
+            SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, COUNT(*) AS purchases
+            FROM orders
+            WHERE product_code = %s
+            GROUP BY month
+            ORDER BY month
+            """, (code,))
+            rows = cursor.fetchall()
+            time_purchase = {
+                "labels": [row['month'] for row in rows],
+                "values": [row['purchases'] for row in rows]
+            }
+
         return jsonify(time_purchase)
 
     except Exception as e:
@@ -958,7 +1188,6 @@ def get_time_purchase_data(code):
     finally:
         cursor.close()
         conn.close()
-
 
 @app.route('/get-product-payment-modes/<code>', methods=['GET'])
 def get_payment_modes(code):
@@ -993,18 +1222,10 @@ def get_age_distribution(code):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
-        SELECT 
-            CASE 
-                WHEN age_range < 18 THEN 'Under 18'
-                WHEN age_range BETWEEN 18 AND 25 THEN '18-25'
-                WHEN age_range BETWEEN 26 AND 40 THEN '26-40'
-                WHEN age_range BETWEEN 41 AND 60 THEN '41-60'
-                ELSE 'Above 60'
-            END AS age_group,
-            COUNT(*) AS count
+        SELECT age_range AS age_group, COUNT(*) AS count
         FROM orders
         WHERE product_code = %s
-        GROUP BY age_group
+        GROUP BY age_range
         """, (code,))
         
         rows = cursor.fetchall()
@@ -1020,7 +1241,6 @@ def get_age_distribution(code):
     finally:
         cursor.close()
         conn.close()
-
 
 @app.route('/get-product-gender-distribution/<code>', methods=['GET'])
 def get_gender_distribution(code):
@@ -1047,7 +1267,6 @@ def get_gender_distribution(code):
     finally:
         cursor.close()
         conn.close()
-
 
 
 @app.route('/dashboard')
@@ -1102,11 +1321,24 @@ def dashboard():
         ''')
         top_category_sales = cursor.fetchall()
 
+        # Fetch products that have not been sold
+        cursor.execute('''
+            SELECT id, name, description, image_url, price, quantity
+            FROM products p
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM orders o
+                WHERE o.product_id = p.id
+            );
+        ''')
+        unsold_products = cursor.fetchall()
+
         return render_template(
             'dashboard.html',
             top_sold_products=top_sold_products,
             min_cost_products=min_cost_products,
-            top_category_sales=top_category_sales
+            top_category_sales=top_category_sales,
+            unsold_products=unsold_products  # Pass the unsold products to the template
         )
 
     except Exception as e:
@@ -1117,7 +1349,6 @@ def dashboard():
     finally:
         cursor.close()
         conn.close()
-
 '''@app.route('/get-product-data/<code>', methods=['GET'])
 def get_product_data(code):
     try:

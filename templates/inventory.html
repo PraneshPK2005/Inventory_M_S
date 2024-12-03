@@ -6,6 +6,94 @@
     <title>Inventory</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 20px;
+    transition: justify-content 0.3s ease; /* Smooth transition for justify-content */
+}
+#expanded_view {
+    position: fixed;
+    top: 10%;
+    right: 0;
+    z-index: 1000;
+    width: 40%;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0; /* Start hidden */
+    transform: translateY(-20px); /* Start slightly above */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition for both */
+    pointer-events: none; /* Prevent interaction when hidden */
+    overflow-y: auto; /* Ensure content fits if it overflows */
+    max-height: 100%; /* Prevent the view from exceeding screen height */
+}
+
+#expanded_view.show {
+    opacity: 1; /* Make visible */
+    transform: translateY(0); /* Reset position */
+    pointer-events: auto; /* Allow interaction */
+}
+.expanded-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Add spacing between sections */
+}
+
+.partition {
+    width: 100%; /* By default, sections take full width */
+    margin-bottom: 10px;
+}
+
+.partition.image{
+    width: 250px;
+   
+}
+.partition.image img {
+    width: 150px; /* Set a fixed width */
+    height: 150px; /* Set a fixed height */
+    object-fit: cover; /* Maintain aspect ratio and cover the container */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.partition.details, .partition.modify {
+    flex: 1; /* Allow these sections to resize proportionally */
+}
+
+.partition.details{
+    margin-top: 200px;
+    margin-left:-275px;
+}
+
+.partition.details p, .partition.details h4 {
+    margin: 6px 0; /* Add spacing between details */
+}
+
+.partition.modify {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    margin-right: 100px;
+    width:300px;
+}
+
+form .form-group {
+    margin-bottom: 10px; /* Add spacing between form elements */
+}
+
+
+#product_grid {
+    width: 100%;
+    max-width: 1200px; /* Max width of the grid */
+    margin: 0 auto; /* Center grid by default */
+    transition: margin-left 0.3s ease, width 0.3s ease; /* Smooth transition for margin changes */
+}
+
+
+
+
         .product-tile {
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -18,61 +106,11 @@
         .product-tile:hover {
             transform: scale(1.05);
         }
-        .expanded-row {
-            display: flex;
-            margin-top: 20px;
-            border: 2px solid #007bff;
-            border-radius: 8px;
-        }
-        .expanded-row .partition {
-            padding: 20px;
-        }
-        .partition.image {
-            flex: 1;
-        }
-        .partition.details {
-            flex: 2;
-        }
-        .partition.modify {
-            flex: 1;
-        }
     </style>
 </head>
 <body>
-
-<div class="container mt-5">
-    <h2>Inventory</h2>
-    <!-- Category Filter and Search Bar -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <select id="category_filter" class="form-control">
-                <option value="">All Categories</option>
-                {% for category in categories %}
-                <option value="{{ category.id }}">{{ category.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-6">
-            <input type="text" id="search" class="form-control" placeholder="Search by name or code">
-        </div>
-        
-    </div>
-    
-
-    <!-- Product Grid -->
-    <div class="row" id="product_list">
-        {% for product in products %}
-        <div class="col-md-3 product-tile" data-id="{{ product.id }}" data-category="{{ product.category_id }}">
-            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid">
-            <h5>{{ product.name }}</h5>
-            <p>Code: {{ product.code }}</p>
-            <p>Price: ₹{{ product.price }}</p>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Expanded Product View -->
-    <div id="expanded_view" class="expanded-row" style="display: none;">
+<div id="expanded_view">
+    <div class="expanded-row">
         <div class="partition image">
             <img id="expanded_image" src="" alt="Product Image" class="img-fluid">
         </div>
@@ -84,9 +122,9 @@
             <p><strong>Quantity:</strong> <span id="product_quantity"></span></p>
         </div>
         <div class="partition modify">
-            <form method="POST" action="{{ url_for('inventory') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ url_for('inventory') }}"  enctype="multipart/form-data">
                 <input type="hidden" name="id" id="product_id">
-                <input type="hidden" name="category_id" id="category_id"> <!-- Add category_id here -->
+                <input type="hidden" name="category_id" id="category_id">
                 <div class="form-group">
                     <label>Name</label>
                     <input type="text" name="name" id="modify_name" class="form-control">
@@ -114,20 +152,70 @@
                 <button type="submit" name="action" value="modify" class="btn btn-primary">Update</button>
                 <button type="submit" name="action" value="delete" class="btn btn-danger mt-2">Delete Product</button>
             </form>
-            
         </div>
+    </div>
+</div>
+
+
+
+<div id="product_grid" class="container mt-5">
+    <h2>Inventory</h2>
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <select id="category_filter" class="form-control">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="text" id="search" class="form-control" placeholder="Search by name or code">
+        </div>
+        
+    </div>
+
+    <!-- Product Grid -->
+    <div class="row" id="product_list">
+        {% for product in products %}
+        <div class="col-md-3 product-tile" data-id="{{ product.id }}" data-category="{{ product.category_id }}">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid">
+            <h5>{{ product.name }}</h5>
+            <p>Code: {{ product.code }}</p>
+            <p>Price: ₹{{ product.price }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        {% if page > 1 %}
+            <a href="{{ url_for('inventory', page=page-1, category=selected_category, search=search_query) }}" class="btn btn-primary">Previous</a>
+        {% else %}
+            <button class="btn btn-primary" disabled>Previous</button>
+        {% endif %}
+    
+        <span>Page {{ page }} of {{ total_pages }}</span>
+    
+        {% if page < total_pages %}
+            <a href="{{ url_for('inventory', page=page+1, category=selected_category, search=search_query) }}" class="btn btn-primary">Next</a>
+        {% else %}
+            <button class="btn btn-primary" disabled>Next</button>
+        {% endif %}
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
-    $(document).ready(function () {
+$(document).ready(function () {
+    let currentExpandedProductId = null; // Track the currently expanded product ID
+
+    // Filter products based on category and search query
     function filterProducts() {
         const selectedCategory = $('#category_filter').val(); // Get selected category
         const searchQuery = $('#search').val().toLowerCase(); // Get search query
 
         $('.product-tile').each(function () {
-            const category = $(this).data('category').toString();
+            const category = $(this).data('category').toString(); // Get category ID from the product
             const name = $(this).find('h5').text().toLowerCase();
             const code = $(this).find('p:first').text().toLowerCase();
 
@@ -136,44 +224,80 @@
             const matchesSearch = !searchQuery || name.includes(searchQuery) || code.includes(searchQuery);
 
             if (matchesCategory && matchesSearch) {
-                $(this).show();
+                $(this).show(); // Show product
             } else {
-                $(this).hide();
+                $(this).hide(); // Hide product
             }
         });
     }
 
     // Attach filter functionality
-        $('#category_filter, #search').on('input', filterProducts);
-        $('#filter_button').on('click', filterProducts);
+    $('#category_filter').on('change', filterProducts); // Trigger filter when category changes
+    $('#search').on('keyup', filterProducts); // Trigger filter when search input changes
 
-        // Handle product click to expand
-        $('.product-tile').on('click', function () {
-            const productId = $(this).data('id');
-            const selectedProduct = {{ products | tojson }}.find(p => p.id === productId);
+    // Handle product click to expand and shift grid
+    $('.product-tile').on('click', function () {
+        const productId = $(this).data('id');
+        const product = {{ products | tojson }}; // Assuming products are passed to JS as JSON
+        const selectedProduct = product.find(p => p.id === productId);
 
-            // Populate expanded view
-            $('#expanded_image').attr('src', selectedProduct.image_url);
-            $('#product_name').text(selectedProduct.name);
-            $('#product_code').text(selectedProduct.code);
-            $('#product_description').text(selectedProduct.description);
-            $('#product_price').text(selectedProduct.price);
-            $('#product_quantity').text(selectedProduct.quantity);
+        // Check if the same product is clicked
+        if (currentExpandedProductId === productId) {
+            // If the same product is clicked, close the expanded view
+            $('#expanded_view').removeClass('show');
+            $('#product_grid').css({
+                'margin-left': '0', // Re-center the grid
+                'width': '100%' // Restore the grid width
+            });
+            currentExpandedProductId = null; // Reset the expanded product ID
+            return; // Exit the function
+        }
 
-            // Populate form fields
-            $('#product_id').val(selectedProduct.id);
-            $('#category_id').val(selectedProduct.category_id);  // Set the category_id here
-            $('#modify_name').val(selectedProduct.name);
-            $('#modify_code').val(selectedProduct.code);
-            $('#modify_description').val(selectedProduct.description);
-            $('#modify_price').val(selectedProduct.price);
-            $('#modify_quantity').val(selectedProduct.quantity);
+        // Populate expanded view with product data
+        $('#expanded_image').attr('src', selectedProduct.image_url);
+        $('#product_name').text(selectedProduct.name);
+        $('#product_code').text(selectedProduct.code);
+        $('#product_description').text(selectedProduct.description);
+        $('#product_price').text(selectedProduct.price);
+        $('#product_quantity').text(selectedProduct.quantity);
 
-            // Show expanded view
-            $('#expanded_view').show();
+        // Populate form fields
+        $('#product_id').val(selectedProduct.id);
+        $('#category_id').val(selectedProduct.category_id); 
+        $('#modify_name').val(selectedProduct.name);
+        $('#modify_code').val(selectedProduct.code);
+        $('#modify_description').val(selectedProduct.description);
+        $('#modify_price').val(selectedProduct.price);
+        $('#modify_quantity').val(selectedProduct.quantity);
+
+        // Show expanded view with transition
+        $('#expanded_view').addClass('show');
+        
+        // Move the product grid to the left and shrink it to 75%
+        $('#product_grid').css({
+            'margin-left': '3%', // Shift grid to the left
+            'width': '55%' // Shrink the grid to 75% of its original size
         });
 
+        // Set the current expanded product ID to the clicked product
+        currentExpandedProductId = productId;
     });
+
+    // Close the expanded view (optional: add a close button or handle outside clicks)
+    $('#expanded_view').on('click', '.close-btn', function () {
+        $('#expanded_view').removeClass('show');
+        $('#product_grid').css({
+            'margin-left': '0', // Re-center the grid
+            'width': '100%' // Restore the grid width
+        });
+        currentExpandedProductId = null; // Reset the expanded product ID
+    });
+
+    // Initialize product filtering
+    filterProducts(); // Apply initial filtering
+});
+
+
 
 </script>
 </body>

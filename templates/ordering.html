@@ -93,9 +93,8 @@
 
         .carousel-inner img {
             width: 100%;
-            height: 500px;
+            height: auto; /* Maintain aspect ratio */
             object-fit: cover;
-            transition: transform 0.5s ease;
         }
 
         .carousel-inner:hover img {
@@ -114,13 +113,14 @@
 
         .carousel-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(4, 1fr); /* 4 products in a row */
             gap: 20px;
             padding: 20px 0;
         }
 
         .product-tile {
             display: flex;
+            flex-direction: column; /* Stack elements vertically */
             background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
@@ -141,7 +141,7 @@
 
         .card-body {
             padding: 20px;
-            width: 50%;
+            flex-grow: 1; /* Allow the card body to grow */
         }
 
         .product-details {
@@ -246,19 +246,44 @@ button[type="submit"]:hover {
         
 
         <!-- Products Listing -->
+        <!-- Products Listing -->
+        <!-- Products Listing -->
         <form action="/place_order" method="POST">
             <div class="carousel-container" id="product_list">
                 {% for product in products %}
-                <div class="product-tile" data-category="{{ product[5] }}">
-                    <img src="{{ product[6] }}" alt="{{ product[1] }}" class="card-img-top">
+                <div class="product-tile" data-category="{{ product.category_name }}">
+                    {% if product.additional_images or product.primary_image %}
+                    <div id="carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner">
+                            {% if product.primary_image %}
+                            <div class="carousel-item {% if not product.additional_images %}active{% endif %}">
+                                <img src="{{ product.primary_image }}" alt="{{ product.name }}" class="d-block w-100">
+                            </div>
+                            {% endif %}
+                            {% for image in product.additional_images %}
+                            <div class="carousel-item {% if loop.index == 1 and not product.primary_image %}active{% endif %}">
+                                <img src="{{ image }}" alt="{{ product.name }}" class="d-block w-100">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a class="carousel-control-prev" href="#carousel-{{ product.id }}" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carousel-{{ product.id }}" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                    {% endif %}
                     <div class="card-body">
-                        <h5 class="card-title">{{ product[1] }}</h5>
-                        <p><strong>Code:</strong> {{ product[2] }}</p>
-                        <p><strong>Price:</strong> ₹{{ product[3] }}</p>
-                        <input type="hidden" name="product_id" value="{{ product[0] }}">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p><strong>Code:</strong> {{ product.code }}</p>
+                        <p><strong>Price:</strong> ₹{{ product.price }}</p>
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
                         <div class="form-group">
                             <label>Quantity</label>
-                            <input type="number" name="quantity" min="0" class="form-control mt-2"  value="0">
+                            <input type="number" name="quantity" min="0" class="form-control mt-2" value="0">
                         </div>
                     </div>
                 </div>

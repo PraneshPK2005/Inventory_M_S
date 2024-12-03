@@ -392,7 +392,7 @@ def ordering():
     cursor.execute('''
         SELECT p.id, p.name, p.code, p.price, p.description, p.category_name, p.image_url, pi.image_url AS additional_image
         FROM products p
-        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN product_image pi ON p.code = pi.code
         LIMIT %s OFFSET %s
     ''', (items_per_page, offset))
 

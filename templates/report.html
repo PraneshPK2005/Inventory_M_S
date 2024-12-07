@@ -9,9 +9,10 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f4f4f4;
+            background-color: #f9f9f9;
             opacity: 0;
             animation: fadeIn 1s forwards;
+            padding-top: 80px; /* Space for the fixed top bar */
         }
 
         @keyframes fadeIn {
@@ -20,14 +21,38 @@
             }
         }
 
+        /* Top bar CSS */
+        .top-bar {
+            width: 100%;
+            height: 80px;
+            background-color: #ffdd03;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .top-bar .form-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         h1, h2 {
-            color: #333;
+            color: #000000;
             cursor: pointer; /* Pointer to indicate clickable */
             transition: color 0.3s ease;
         }
 
         h2:hover {
-            color: #007bb5; /* Change color on hover */
+            color: #ffdd03; /* Change color on hover */
         }
 
         table {
@@ -40,21 +65,21 @@
         }
 
         table.show {
-            opacity: 1; /* Fade in */
+            opacity: 4; /* Fade in */
         }
 
         table, th, td {
-            border: 1px solid #ccc;
+            border: 3px solid #000000;
         }
 
         th, td {
-            padding: 10px;
+            padding: 15px;
             text-align: left;
             transition: background-color 0.3s ease;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #ffffff;
         }
 
         tr:hover {
@@ -64,20 +89,20 @@
         .alert {
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #ffffff;
             border-radius: 5px;
-            background-color: #e7f3fe;
-            color: #31708f;
+            background-color: #627b92;
+            color: #39318f;
         }
 
         .no-data {
-            color: #999;
+            color: #ffffff; 
             font-style: italic;
         }
 
         button {
             border: 0;
-            background: #0087cc;
+            background: #006599;
             border-radius: 4px;
             box-shadow: 0 5px 0 #006599;
             color: #fff;
@@ -90,7 +115,7 @@
         }
 
         button:hover {
-            background: #007bb5;
+            background: #d9d247;
             transform: translateY(-3px);
             box-shadow: 0 3px 0 #005f8c;
         }
@@ -102,9 +127,17 @@
     </style>
 </head>
 <body>
-    <h1>Inventory Management Report</h1>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="form-title">
+            <span>Inventory Management Report</span>
+        </div>
+    </div>
 
+    <!-- Content Below Top Bar -->
+     <center>
     <h2 onclick="scrollToSection('price-changes')">Product Price Changes</h2>
+     </center>
     <div id="price-changes">
         {% if price_changes %}
         <table class="fade-in">
@@ -127,8 +160,9 @@
         <p class="no-data">No recent price changes.</p>
         {% endif %}
     </div>
-
+    <center>
     <h2 onclick="scrollToSection('min-quantity-alerts')">Minimum Quantity Alerts</h2>
+    </center>
     <div id="min-quantity-alerts">
         {% if min_quantity_alerts %}
         <table class="fade-in">
@@ -147,9 +181,9 @@
         <p class="no-data">No products at minimum quantity.</p>
         {% endif %}
     </div>
-
-    
+    <center>
     <h2 onclick="scrollToSection('unsold-products')">Unsold Products</h2>
+    </center>
     <div id="unsold-products">
         {% if unsold_products %}
         <table class="fade-in">
@@ -170,8 +204,9 @@
         <p class="no-data">All products have been sold at least once.</p>
         {% endif %}
     </div>
-
+    <center>
     <h2 onclick="scrollToSection('most-sold-category')">Most Sold Product Category</h2>
+    </center>
     <div id="most-sold-category">
         {% if most_sold_category %}
         <p>Category: <strong>{{ most_sold_category.category_name }}</strong></p>
@@ -180,8 +215,9 @@
         <p class="no-data">No category data available.</p>
         {% endif %}
     </div>
-
+    <center>
     <h2 onclick="scrollToSection('restock-alerts')">Restock Alerts</h2>
+    </center>
     <div id="restock-alerts">
         {% if restock_alerts %}
         <table class="fade-in">
@@ -202,8 +238,9 @@
         <p class="no-data">No restock alerts for this month.</p>
         {% endif %}
     </div>
-
+    <center>
     <h2 onclick="scrollToSection('lowest-priced-products')">Lowest Priced Products</h2>
+    </center>
     <div id="lowest-priced-products">
         {% if lowest_priced_products %}
         <table class="fade-in">
@@ -224,8 +261,9 @@
         <p class="no-data">No products available.</p>
         {% endif %}
     </div>
-
+    <center>
     <h2 onclick="scrollToSection('monthly-sales-growth')">Monthly Sales Growth Rate</h2>
+    </center>
     <div id="monthly-sales-growth">
         {% if monthly_sales_growth_rate %}
         <table class="fade-in">
@@ -244,6 +282,7 @@
         <p class="no-data">No sales data available for growth rate calculation.</p>
         {% endif %}
     </div>
+
 
     <script>
         // Smooth scrolling to sections

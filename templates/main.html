@@ -6,6 +6,7 @@
   <title>Inventory Management</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -242,7 +243,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 3rem;
+  padding: 2rem;
   width: 90%;
   max-width: 1200px;
 }
@@ -287,10 +288,8 @@
 
 .image-content img {
   max-width: 100%;
-
   height: auto;
-  margin-left: 400px;
-  
+  margin-left: 100px;;
 }
 /* Footer Styling */
 
@@ -416,6 +415,44 @@
   text-decoration: underline;
 }
 
+.notification {
+  position: fixed;
+  right: 20px;
+  background-color: #f8d7da; /* Light red background */
+  color: #721c24; /* Dark red text */
+  padding: 10px; /* Adjusted padding for better spacing */
+  border: 1px solid #f5c6cb; /* Light red border */
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: none; /* Hidden by default */
+  z-index: 1000; /* Ensure it appears above other content */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0; /* Start as invisible */
+  transform: translateY(100%); /* Start off-screen */
+  margin-bottom: 10px; /* Space between notifications */
+  width: 400px; /* Set a fixed width */
+  height: 70px; /* Set a fixed height */
+}
+
+.notification.show {
+  display: block; /* Show the notification */
+  opacity: 1; /* Make it visible */
+  transform: translateY(0); /* Slide in */
+}
+
+.notification.hide {
+  opacity: 0; /* Fade out */
+  transform: translateY(100%); /* Slide out */
+}
+
+.notification .close-btn {
+  position: absolute; /* Position the close button absolutely */
+  top: 5px; /* Adjust as needed */
+  right: 10px; /* Adjust as needed */
+  cursor: pointer;
+  color: #721c24; /* Dark red */
+  font-size: 18px; /* Adjust size as needed */
+}
 
     
 </style>
@@ -427,11 +464,11 @@
       <h1 class="title">Inventory Management</h1>
     </div>
     <div class="header-buttons">
-        <button>Home</button>
-        <button>About us</button>
-        <button>Contact info</button>
+      <button onclick="scrollToSection('main_content')">Home</button>
+        <button onclick="scrollToSection('overview-sections')">About Us</button>
+        <button onclick="scrollToSection('footer')">Contact Info</button>
         <a href="/">
-          <img src="static/images/logout.png" alt="Logout" class="logout-icon">
+          <img src="static\images\logout.png" alt="Logout" class="logout-icon">
         </a>
       </div>
   </header>
@@ -453,7 +490,7 @@
       </ul>
     </aside>
     <main class="content" id="main-content">
-        <div class="content-main">
+        <div class="content-main" id="main_content">
             <div class="text-content">
               <h1>Inventory Management</h1>
               <p>Inventory management is the process of tracking, ordering, storing and selling stock. It covers the entire process, from how you source your products to how you get finished products off of your shelves. The main purpose of inventory management is to have the right amount of stock in the right locations at the right time, all while controlling costs so you can make a profit.
@@ -462,14 +499,20 @@
               <a href="https://en.wikipedia.org/wiki/Inventory_management_software" class="btn">Learn More</a>
             </div>
             <div class="image-content">
-              <img src="static/images/main_img.png" alt="Inventory Management Illustration">
+              <img src="static\images\main_img.png" alt="Inventory Management Illustration">
             </div>
+          </div>
+
+          <div class="notification" id="lowStockNotification">
+            <strong>Low Stock Alert!</strong> 
+            <ul id="lowStockList"></ul>
+            <span class="close-btn" id="closeNotification">&times;</span>
           </div>
     
           <!-- Overview Sections -->
-          <div class="overview-sections">
+          <div class="overview-sections" id="overview-sections">
             <div class="overview">
-              <img src="static/images/main_inventory.jpg" alt="Overview Image">
+              <img src="static\images\main_inventory.jpg" alt="Overview Image">
               <div class="text-content">
                 <h2>Inventory Overview</h2>
                 <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloribus, dolorem! Ducimus laborum corrupti non corporis dicta alias dolores, recusandae quod tenetur porro autem dolorem impedit quia dolore ea, culpa eaque!This section provides an overview of your inventory including item counts and status.</p>
@@ -483,21 +526,21 @@
               </div>
             </div>
             <div class="overview">
-              <img src="static/images/main_stock.jpg" alt="Overview Image">
+              <img src="static\images\main_stock.jpg" alt="Overview Image">
               <div class="text-content">
                 <h2>Stock Alerts</h2>
                 <p>Set alerts for low stock levels and receive notifications for replenishment.</p>
               </div>
             </div>
             <div class="overview reverse">
-              <img src="static/images/main_vendor.jpg" alt="Overview Image">
+              <img src="static\images\main_vendor.jpg" alt="Overview Image">
               <div class="text-content">
                 <h2>Vendor Management</h2>
                 <p>Track and manage your vendors to ensure timely product delivery.</p>
               </div>
             </div>
             <div class="overview">
-              <img src="static/images/main_report.jpg" alt="Overview Image">
+              <img src="static\images\main_report.jpg" alt="Overview Image">
               <div class="text-content">
                 <h2>Reporting</h2>
                 <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptates magni quibusdam amet laborum similique ea, sit ut optio autem molestias delectus obcaecati vel dolore harum molestiae ipsum quasi illo blanditiis!Generate detailed reports on inventory status, sales, and stock trends.</p>
@@ -507,7 +550,7 @@
     </main>
   </div>
           <!- Footer Section ->
-          <footer class="footer">
+          <footer class="footer" id="footer">
               <div class="footer-container">
                   <!- Contact Info ->
                   <div class="footer-section">
@@ -549,15 +592,6 @@
                       </ul>
                   </div>
               </div>
-      
-              <!---- Footer Bottom Section ->
-              <div class="footer-bottom">
-                  <p>© 2023. All rights reserved. <a href="#">A Theme by Inspiry Themes</a></p>
-              </div>
-          </footer>-->
-
-      
-
   <script>
     
 document.querySelector('.sidebar-toggle').addEventListener('click', function () {
@@ -576,12 +610,78 @@ document.querySelector('.sidebar-toggle').addEventListener('click', function () 
     footer.style.width = 'calc(100% - 65px)';
   }
 });
-
-
-
-    
-
-
   </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    const lowStockProducts = {{ low_stock_products|tojson }};
+
+if (lowStockProducts.length > 0) {
+  let notificationCount = 0; // Track the number of notifications
+  let notificationDelay = 5000; // 5 seconds delay for each notification
+
+  lowStockProducts.forEach((product, index) => {
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    notification.innerHTML = `
+      <strong>Low Stock Alert!</strong> 
+      <ul>
+        <li>
+          ${product[0]} - Current Quantity: ${product[2]} 
+        </li>
+      </ul>
+      <span class="close-btn">&times;</span>
+    `;
+
+    // Calculate the bottom position based on the number of notifications
+    notification.style.bottom = `${20 + (notificationCount * 80)}px`; // Adjust 80px based on notification height + margin
+
+    document.body.appendChild(notification);
+
+    // Show the notification with a slide-in effect
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100); // Delay to allow for the notification to be added to the DOM
+
+    // Close notification on click
+    notification.querySelector('.close-btn').addEventListener('click', () => {
+      closeNotification(notification);
+    });
+
+    // Automatically close the notification after the specified delay
+    setTimeout(() => {
+      closeNotification(notification);
+    }, notificationDelay + (index * notificationDelay)); // Delay for each notification
+
+    notificationCount++; // Increase the count for each notification
+  });
+}
+
+// Function to close a notification
+function closeNotification(notification) {
+  notification.classList.remove('show');
+  setTimeout(() => {
+    notification.remove(); // Remove from DOM after animation
+    repositionNotifications(); // Reposition remaining notifications
+  }, 300); // Match this duration with the CSS transition duration
+}
+
+// Function to reposition notifications
+function repositionNotifications() {
+  const notifications = document.querySelectorAll('.notification');
+  notifications.forEach((notification, index) => {
+    notification.style.bottom = `${20 + (index * 80)}px`; // Adjust 80px based on notification height + margin
+  });
+}
+  </script>
+  <script>
+    function scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+</script>
 </body>
 </html>

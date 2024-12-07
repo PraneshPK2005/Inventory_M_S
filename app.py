@@ -133,7 +133,21 @@ def reset_password():
 # Dashboard Page
 @app.route('/main')
 def main():
-    return render_template('main.html')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query to find low stock products
+    cursor.execute('''
+        SELECT name, image_url, quantity, min_quantity 
+        FROM products 
+        WHERE quantity < min_quantity
+    ''')
+    low_stock_products = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('main.html', low_stock_products=low_stock_products)
 
 # Inventory Page
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed extensions
@@ -150,45 +164,90 @@ def inventory():
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Define your upload folder
     items_per_page = 55
     page = request.args.get('page', 1, type=int)
-    
+
     if request.method == 'POST':
         action = request.form['action']
         product_id = request.form['id']
+        print(f"Action: {action}, Product ID: {product_id}")  # Debug: Log action and product ID
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Pagination settings
-        
 
-        # Initialize image_url variable (default to None)
+        # Initialize image_url variable
         image_url = None
 
-        # Handle image upload
-        if 'image' in request.files:
-            image = request.files['image']
-            if image and image.filename != '':
+        # Handle primary image upload
+        if 'primary_image' in request.files:
+            primary_image = request.files['primary_image']
+            if primary_image and primary_image.filename != '':
                 # Fetch the current image_url from the database
                 cursor.execute("SELECT image_url FROM products WHERE id = %s", (product_id,))
                 current_image_url = cursor.fetchone()[0]  # Fetch the existing image_url
-                
+                print(f"Current Image URL: {current_image_url}")  # Debug: Log current image URL
+
                 # If an old image exists, delete it
                 if current_image_url:
                     old_image_path = current_image_url.lstrip('/')  # Remove leading '/' for the correct path
                     if os.path.exists(old_image_path):
                         try:
                             os.remove(old_image_path)
-                            print(f"Deleted old image: {old_image_path}")
+                            print(f"Deleted old primary image: {old_image_path}")
                         except Exception as e:
-                            print(f"Error deleting old image: {e}")
+                            print(f"Error deleting old primary image: {e}")
 
                 # Save the new image
-                filename = secure_filename(image.filename)
+                filename = secure_filename(primary_image.filename)
                 image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                print(f"Saving image to: {image_path}")  # Debug: Check the path where the image is saved
-                image.save(image_path)
+                print(f"Saving primary image to: {image_path}")  # Debug: Check the path where the image is saved
+                primary_image.save(image_path)
                 image_url = f"/{UPLOAD_FOLDER}/{filename}"
-                print(f"Image URL: {image_url}")  # Debug: Check the image URL being stored
+                print(f"New Primary Image URL: {image_url}")  # Debug: Check the new image URL being stored
 
+                # Update the image_url in the products table
+                cursor.execute('''
+                    UPDATE products
+                    SET image_url = %s
+                    WHERE id = %s
+                ''', (image_url, product_id))
+
+        # Handle additional images upload
+        if 'additional_images' in request.files:
+            additional_images = request.files.getlist('additional_images')
+            if any(additional_image.filename for additional_image in additional_images):  # Check if any additional images have a filename
+                # Fetch existing additional images from the database
+                cursor.execute("SELECT image_url FROM product_image WHERE code = (SELECT code FROM products WHERE id = %s)", (product_id,))
+                existing_additional_images = cursor.fetchall()  # Fetch all existing additional images
+
+                # Delete existing additional images from the filesystem
+                for img in existing_additional_images:
+                    if img[0]:  # Check if image_url is not None
+                        old_image_path = img[0].lstrip('/')  # Remove leading '/' for the correct path
+                        if os.path.exists(old_image_path):
+                            try:
+                                os.remove(old_image_path)
+                                print(f"Deleted old additional image: {old_image_path}")
+                            except Exception as e:
+                                print(f"Error deleting old additional image: {e}")
+
+                # Clear existing additional images from the database
+                cursor.execute('DELETE FROM product_image WHERE code = (SELECT code FROM products WHERE id = %s)', (product_id,))
+
+                # Save new additional images
+                for additional_image in additional_images:
+                    if additional_image and additional_image.filename != '':
+                        filename = secure_filename(additional_image.filename)
+                        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        additional_image.save(image_path)
+                        additional_image_url = f"/{UPLOAD_FOLDER}/{filename}"
+                        print(f"New Additional Image URL: {additional_image_url}")  # Debug: Log the new additional image URL
+
+                        # Insert new additional image into the database
+                        cursor.execute('''
+                            INSERT INTO product_image (code, image_url)
+                            VALUES ((SELECT code FROM products WHERE id = %s), %s)
+                        ''', (product_id, additional_image_url))
+
+                        
         # Modify product details in the database
         if action == 'modify':
             name = request.form['name']
@@ -197,32 +256,63 @@ def inventory():
             quantity = request.form['quantity']
             description = request.form['description']
             category_id = request.form['category_id']
-            
+
             cursor.execute("SELECT price FROM products WHERE id = %s", (product_id,))
-            current_price = cursor.fetchone()[0]  
+            current_price = cursor.fetchone()[0]
+            
+            cursor.execute('''
+                UPDATE products
+                SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s
+                WHERE id = %s
+            ''', (name, code, price, quantity, description, category_id, product_id))
 
-            if image_url:  # Update image_url only if a new image was uploaded
-                cursor.execute('''
-                    UPDATE products
-                    SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, image_url = %s, last_updated = NOW()
-                    WHERE id = %s
-                ''', (name, code, price, quantity, description, category_id, image_url, product_id))
-            else:  # If no image uploaded, only update other fields
-                cursor.execute('''
-                    UPDATE products
-                    SET name = %s, code = %s, price = %s, quantity = %s, description = %s, category_id = %s, last_updated = NOW()
-                    WHERE id = %s
-                ''', (name, code, price, quantity, description, category_id, product_id))
-
+            # Handle price history if the price has changed
+            
             if float(price) != current_price:
                 cursor.execute('''
-                    INSERT INTO price_history (product_code, price, time)
-                    VALUES (%s, %s, CURDATE())
-                ''', (code, price))
+                    INSERT INTO price_history (product_code, price, time, name)
+                    VALUES (%s, %s, CURDATE(), %s)
+                ''', (code, price,name))
 
+        
 
         elif action == 'delete':
+            # First, fetch the current image_url from the product table
+            cursor.execute("SELECT image_url FROM products WHERE id = %s", (product_id,))
+            current_image_url = cursor.fetchone()[0]  # Fetch the existing image_url
+
+            # Delete images from the product_image table and fetch their URLs
+            cursor.execute("SELECT image_url FROM product_image WHERE code = (SELECT code FROM products WHERE id = %s)", (product_id,))
+            additional_images = cursor.fetchall()  # Fetch all additional images
+
+            # Delete additional images from the filesystem
+            for img in additional_images:
+                if img[0]:  # Check if image_url is not None
+                    old_image_path = img[0].lstrip('/')  # Remove leading '/' for the correct path
+                    if os.path.exists(old_image_path):
+                        try:
+                            os.remove(old_image_path)
+                            print(f"Deleted additional image from filesystem: {old_image_path}")
+                        except Exception as e:
+                            print(f"Error deleting additional image from filesystem: {e}")
+
+            # If an old image exists, delete it from the filesystem
+            if current_image_url:
+                old_image_path = current_image_url.lstrip('/')  # Remove leading '/' for the correct path
+                if os.path.exists(old_image_path):
+                    try:
+                        os.remove(old_image_path)
+                        print(f"Deleted old image from filesystem: {old_image_path}")
+                    except Exception as e:
+                        print(f"Error deleting old image from filesystem: {e}")
+
+            # Delete the entries from product_image table
+            cursor.execute('DELETE FROM product_image WHERE code = (SELECT code FROM products WHERE id = %s)', (product_id,))
+            print(f"Deleted images for product ID: {product_id}")  # Debug: Log deleted images
+
+            # Then, delete the product itself
             cursor.execute('DELETE FROM products WHERE id = %s', (product_id,))
+            print(f"Deleted product with ID: {product_id}")  # Debug: Log deleted product ID
 
         conn.commit()  # Commit the changes to the database
         cursor.close()
@@ -240,6 +330,7 @@ def inventory():
     # Fetch categories for the dropdown
     cursor.execute("SELECT id, name FROM categories")
     categories = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
+    print(f"Categories fetched: {categories}")  # Debug: Log fetched categories
 
     # Fetch products based on selected category and search query
     query = '''
@@ -259,11 +350,12 @@ def inventory():
         else:
             query += " WHERE LOWER(p.name) LIKE %s OR LOWER(p.code) LIKE %s"
         params.extend([f"%{search_query}%", f"%{search_query}%"])
-    
+
     # Add pagination
     query += " LIMIT %s OFFSET %s"
     params.extend([items_per_page, (page - 1) * items_per_page])
 
+    print(f"Executing query: {query} with params: {params}")  # Debug: Log the query and parameters
     cursor.execute(query, params)
     products = cursor.fetchall()
 
@@ -271,9 +363,21 @@ def inventory():
     cursor.execute("SELECT COUNT(*) FROM products")
     total_products = cursor.fetchone()[0]
     total_pages = (total_products + items_per_page - 1) // items_per_page  # Calculate total pages
+    print(f"Total products: {total_products}, Total pages: {total_pages}")  # Debug: Log total products and pages
+
+    # Fetch additional images for each product
+    product_images = []
+    for product in products:
+        cursor.execute("SELECT image_url FROM product_image WHERE code = %s", (product[2],))  # product code
+        images = cursor.fetchall()
+        product_images.append({
+            'code': product[2],
+            'images': [img[0] for img in images]  # Collect image URLs
+        })
 
     cursor.close()
     conn.close()
+    print("Additional images:", product_images)
     product_list = [{
         'id': product[0],
         'name': product[1],
@@ -286,8 +390,7 @@ def inventory():
         'category_id': product[8]
     } for product in products]
 
-    return render_template('inventory.html', products=product_list, categories=categories, page=page, total_pages=total_pages)
-
+    return render_template('inventory.html', products=product_list, categories=categories, page=page, total_pages=total_pages, product_images=product_images)
 
 
 import time
@@ -309,16 +412,28 @@ def add_product():
         product_quantity = request.form['quantity']
         category_id = request.form['category_id']
         
-        # Handle image upload
-        image_file = request.files['image']
-        if image_file and image_file.filename != '':
-            secure_name = secure_filename(image_file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_name)
-            image_file.save(file_path)
+        # Handle primary image upload
+        primary_image_file = request.files['primary_image']
+        if primary_image_file and primary_image_file.filename != '':
+            secure_primary_name = secure_filename(primary_image_file.filename)
+            primary_image_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_primary_name)
+            primary_image_file.save(primary_image_path)
+            primary_image_url = f'/static/images/{secure_primary_name}'  # URL for database
         else:
-            flash('Image upload failed.', 'danger')
+            flash('Primary image upload failed.', 'danger')
             return redirect(url_for('add_product'))
         
+        # Handle additional images upload
+        additional_images = request.files.getlist('additional_images')
+        additional_image_urls = []  # List to store additional image URLs
+        
+        for image_file in additional_images:
+            if image_file and image_file.filename != '':
+                secure_additional_name = secure_filename(image_file.filename)
+                additional_image_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_additional_name)
+                image_file.save(additional_image_path)
+                additional_image_urls.append(f'/static/images/{secure_additional_name}')  # Store URL
+
         # Save product details to database
         try:
             conn = get_db_connection()
@@ -334,16 +449,26 @@ def add_product():
                 INSERT INTO products (name, code, description, price, quantity, image_url, category_id, category_name)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ''', (product_name, product_code, product_description, product_price, product_quantity, 
-                  f'/static/images/{secure_name}', category_id, category_name))
+                  primary_image_url, category_id, category_name))
 
             conn.commit()  # Commit transaction
 
+            # Insert primary image into price history (if needed)
             cursor.execute('''
-                INSERT INTO price_history (product_code, price, time)
-                VALUES (%s, %s, CURDATE())
-            ''', (product_code, product_price))
+                INSERT INTO price_history (product_code, price, time, name)
+                VALUES (%s, %s, CURDATE(),%s)
+            ''', (product_code, product_price,product_name))
 
             conn.commit()
+
+            # Insert additional images into product_image table
+            for image_url in additional_image_urls:
+                cursor.execute('''
+                    INSERT INTO product_image (code, image_url)
+                    VALUES (%s, %s)
+                ''', (product_code, image_url))
+
+            conn.commit()  # Commit after inserting all additional images
 
         except Exception as e:
             app.logger.error(f"Error: {e}")
@@ -352,7 +477,8 @@ def add_product():
         finally:
             cursor.close()
             conn.close()
-        time.sleep(3)
+        
+        time.sleep(3)  # Optional: Delay for user experience
         return redirect(url_for('add_product'))
 
     # Fetch categories for dropdown
@@ -388,11 +514,10 @@ def ordering():
 
     offset = (page - 1) * items_per_page
 
-    # Fetch products with their primary image and additional images
+    # Fetch products with their primary image
     cursor.execute('''
-        SELECT p.id, p.name, p.code, p.price, p.description, p.category_name, p.image_url, pi.image_url AS additional_image
+        SELECT p.id, p.name, p.code, p.price, p.description, p.category_name, p.image_url
         FROM products p
-        LEFT JOIN product_image pi ON p.code = pi.code
         LIMIT %s OFFSET %s
     ''', (items_per_page, offset))
 
@@ -402,35 +527,45 @@ def ordering():
     cursor.execute('SELECT name FROM categories')
     categories = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
-
-    # Organize products by ID to group images
+    # Create a dictionary to hold products and their additional images
     product_dict = {}
     for product in products:
         product_id = product[0]
-        if product_id not in product_dict:
-            product_dict[product_id] = {
-                'id': product[0],
-                'name': product[1],
-                'code': product[2],
-                'price': product[3],
-                'description': product[4],
-                'category_name': product[5],
-                'primary_image': product[6],
-                'additional_images': []
-            }
-        # Append additional image URL if it exists
-        if product[7]:
-            product_dict[product_id]['additional_images'].append(product[7])
+        product_dict[product_id] = {
+            'id': product[0],
+            'name': product[1],
+            'code': product[2],
+            'price': product[3],
+            'description': product[4],
+            'category_name': product[5],
+            'primary_image': product[6],
+            'additional_images': []
+        }
+
+    # Fetch additional images for all products
+    codes = [product[2] for product in products]  # Get product codes
+    if codes:
+        placeholders = ', '.join(['%s'] * len(codes))  # Create placeholders
+        cursor.execute(f'''
+            SELECT code, image_url FROM product_image
+            WHERE code IN ({placeholders})
+        ''', codes)  # Pass the list directly
+        
+        additional_images = cursor.fetchall()
+
+        # Populate additional images in the product_dict
+        for code, image_url in additional_images:
+            for product in product_dict.values():
+                if product['code'] == code:
+                    product['additional_images'].append(image_url)
+
+    cursor.close()
+    conn.close()
 
     # Convert back to a list
     products = list(product_dict.values())
 
     return render_template('ordering.html', products=products, categories=categories, page=page, total_pages=total_pages)
-
-
-
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
@@ -521,9 +656,9 @@ def confirm_order():
                 # Insert into orders table
                 cursor.execute('''
                     INSERT INTO orders (product_id, product_name, product_code, quantity, cost, customer_name,
-                                        customer_address, payment_mode, country, age_range, gender, order_date)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-                ''', (product_id, name, code, quantity, cost, customer_name, customer_address, payment_mode, country, age_range,gender))
+                                        customer_address, payment_mode, country, age_range, gender, order_date, total_price)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)
+                ''', (product_id, name, code, quantity, cost, customer_name, customer_address, payment_mode, country, age_range,gender, cost))
 
                 # Update product quantity and last_sold_date
                 cursor.execute('''
@@ -534,9 +669,9 @@ def confirm_order():
 
                 # Insert into sales table
                 cursor.execute('''
-                    INSERT INTO sales (product_id, product_name, product_code, quantity, payment_mode, total_price, order_date)
-                    VALUES (%s, %s, %s, %s, %s, %s, NOW())
-                ''', (product_id, name, code, quantity, payment_mode, cost))
+                    INSERT INTO sales (product_id, product_name, product_code, quantity, payment_mode, total_price, order_date, country)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW(),%s)
+                ''', (product_id, name, code, quantity, payment_mode, cost, country))
 
         # Commit changes
         conn.commit()

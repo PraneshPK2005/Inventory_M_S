@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,36 @@
             background-color: #f9f9f9;
             color: #333;
         }
+
+        .top-bar {
+    width: 100%;
+    height: 80px;
+    background-color: #ffdd03;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.top-bar .form-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-bar .form-title img.icon {
+    width: 50px; /* Adjust the icon width */
+    height: 50px; /* Adjust the icon height */
+    object-fit: contain; /* Ensure the full image fits within the specified dimensions */
+}
+
 
         .navbar {
             background-color: #007bff;
@@ -99,6 +129,318 @@
     </style>
 </head>
 <body>
+    <div class="top-bar">
+        <div class="form-title">
+            <img src="static\images\evaluation.png" alt="Grievance Icon" class="icon" />
+            Grievance Form
+        </div>
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Product Showcase</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#topSoldCarousel">Top Sold</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#minCostCarousel">Minimum Cost</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#categoryCarousel">Category Leaders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#unsoldProductsCarousel">Unsold</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <h1>Top Products</h1>
+
+    <h2>Top 5 Most Sold Products</h2>
+    <div id="topSoldCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for product in top_sold_products %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{ product.image_url }}" class="d-block w-100" alt="{{ product.name }}">
+                <span class="ranking-badge">#{{ loop.index }}</span>
+                <div class="product-details">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Total Sold:</strong> {{ product.total_sold }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#topSoldCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#topSoldCarousel " data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <h2>Top 5 Minimum Cost Products</h2>
+    <div id="minCostCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for product in min_cost_products %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{ product.image_url }}" class="d-block w-100" alt="{{ product.name }}">
+                <span class="ranking-badge">#{{ loop.index }}</span>
+                <div class="product-details">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Price:</strong> ₹{{ product.price }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#minCostCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#minCostCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <h2>Top Product from Each Category</h2>
+    <div id="categoryCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for product in top_category_sales %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{ product.image_url }}" class="d-block w-100" alt="{{ product.product_name }}">
+                <span class="ranking-badge">{{ product.category_name }}</span>
+                <div class="product-details">
+                    <div class="product-name">{{ product.product_name }}</div>
+                    <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Total Sold:</strong> {{ product.total_sold }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#categoryCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <h2>Products That Have Not Been Sold</h2>
+    <div id="unsoldProductsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for product in unsold_products %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{ product.image_url }}" class="d-block w-100" alt="{{ product.name }}">
+                <div class="product-details">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-description">{{ product.description }}</div>
+                    <p><strong>Price:</strong> ₹{{ product.price }}</p>
+                    <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#unsoldProductsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#unsoldProductsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Products</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+            body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.top-bar {
+    width: 100%;
+    height: 80px;
+    background-color: #ffdd03;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.top-bar .form-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-bar .form-title img.icon {
+    width: 50px; /* Adjust the icon width */
+    height: 50px; /* Adjust the icon height */
+    object-fit: contain; /* Ensure the full image fits within the specified dimensions */
+}
+
+.navbar {
+    background-color: #007bff;
+}
+
+.navbar-brand, .nav-link {
+    color: #fff !important;
+    font-weight: bold;
+}
+
+h1, h2 {
+    text-align: center;
+    margin: 30px 0;
+}
+
+h1 {
+    color: #007bff;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    color: black;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin: 30px 0 20px; /* Adds space below the <h2> tag */
+}
+
+.carousel {
+    margin-bottom: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.carousel-inner {
+    gap: 0px    ; /* Adds spacing between carousel slides */
+}
+
+.carousel-item {
+    margin-bottom: 1px; /* Adds space below each carousel item */
+    padding: 5px; /* Adds padding inside the slides for better spacing */
+}
+
+.carousel-item img {
+    width: auto; /* Maintain the original width of the image */
+    height: auto; /* Maintain the original height of the image */
+    max-height: 300px; /* Optional: Define a max-height to limit the image size */
+    object-fit: contain; /* Ensure the image fits without distortion */
+    margin: auto; /* Center the image horizontally */
+    display: block; /* Ensure proper alignment */
+    transition: transform 0.1s ease-in-out;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    background: none; /* Remove any background */
+    border: none; /* Remove border */
+    color: black; /* Default color of the arrows */
+    font-size: 2rem; /* Icon size */
+    font-weight: bold; /* Bold for the arrows */
+    display: flex; /* Use flexbox to center the icons */
+    justify-content: center; /* Horizontally center the icon */
+    align-items: center; /* Vertically center the icon */
+    width: auto; /* Let the buttons take only the space they need */
+    height: auto; /* Avoid taking the full height of the carousel */
+    padding: 0; /* Remove any padding */
+    transition: color 0.3s ease-in-out; /* Smooth transition on hover */
+}
+
+.carousel-control-prev::before,
+.carousel-control-next::before {
+    content: ''; /* Clear default pseudo-elements */
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    color: #ffdd03; /* Change color on hover */
+}
+
+/* Specific styles for the icons */
+.carousel-control-prev::before {
+    content: '<'; /* Custom content for previous button */
+    font-size: 3rem; /* Size of the icon */
+}
+
+.carousel-control-next::before {
+    content: '>'; /* Custom content for next button */
+    font-size: 3rem; /* Size of the icon */
+}
+
+
+.ranking-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background:  #ffdd03;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+.product-details {
+    text-align: center;
+    background-color: #fff;
+    padding: 15px;
+    margin-top: 20px; /* Adds spacing above the product details container */
+    border-radius: 0 0 15px 15px;
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: #007bff;
+}
+
+.product-description {
+    color: #666;
+}
+
+.footer {
+    background-color: #007bff;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    margin-top: 30px;
+}
+
+.footer a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="form-title">
+                Dashboard
+        </div>
+    </div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Product Showcase</a>
